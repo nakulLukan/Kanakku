@@ -1,7 +1,10 @@
 ﻿@page "/fetchdata"
 
+@using Kanakku.Application.Requests
 @using Kanakku.UI.Data
+@using MediatR
 @inject WeatherForecastService ForecastService
+@inject IMediator Mediator
 
 <h1>Weather forecast</h1>
 
@@ -42,5 +45,6 @@ else
 	protected override async Task OnInitializedAsync()
 	{
 		forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
+		var temp = await Mediator.Send(new SampleRequest());
 	}
 }

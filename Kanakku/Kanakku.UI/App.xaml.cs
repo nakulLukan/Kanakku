@@ -1,11 +1,12 @@
-﻿namespace Kanakku.UI;
+﻿
+namespace Kanakku.UI;
 
-public partial class App : Application
+public partial class App : Microsoft.Maui.Controls.Application
 {
-	public App()
-	{
-		InitializeComponent();
+    public App()
+    {
+        InitializeComponent();
 
-		MainPage = new MainPage();
-	}
+        MainPage = new MainPage();
+    }
 }
