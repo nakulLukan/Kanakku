@@ -1,0 +1,35 @@
+﻿@page "/signup"
+@layout LoginLayout
+
+@using Kanakku.Application.Requests.User
+@inject MediatR.IMediator Mediator;
+@inject NavigationManager NavigationManager;
+
+<h3>Create an account</h3>
+
+<label>Username: </label>
+<input type="text" @bind-value="Username" />
+<br />
+<label>New Password: </label>
+<input type="password" @bind-value="Password" />
+<br />
+<label>Confirm Password: </label>
+<input type="password" @bind-value="ConfirmPassword" />
+<br />
+<button @onclick="CreateAccount">Create</button>
+@code {
+    public string Username { get; set; }
+    public string Password { get; set; }
+    public string ConfirmPassword { get; set; }
+
+    public async Task CreateAccount()
+    {
+        var result = await Mediator.Send(new CreateUserAccountCommand()
+            {
+                Username = Username,
+                Password = Password,
+                ConfirmPassword = ConfirmPassword
+            });
+        NavigationManager.NavigateTo("login");
+    }
+}

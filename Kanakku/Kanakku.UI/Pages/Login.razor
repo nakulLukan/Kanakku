@@ -1,0 +1,34 @@
+﻿@page "/login"
+@using Kanakku.Application.Contracts.Storage
+@using Kanakku.Application.Requests.User
+@using Kanakku.Shared
+@layout LoginLayout
+@inject NavigationManager NavigationManager;
+@inject IAppSecureStorage AppSecureStorage;
+@inject MediatR.IMediator Mediator;
+
+<h3>Login</h3>
+<input type="email" @bind-value="UserName" />
+<br />
+<input type="password" @bind-value="Password" />
+<br />
+<button @onclick="LoginCommand">Login</button>
+<NavLink href="signup">
+    <span>create an account</span>
+</NavLink>
+
+@code {
+    public string UserName { get; set; }
+    public string Password { get; set; }
+
+    public async Task LoginCommand()
+    {
+        var user = await Mediator.Send(new LoginQuery()
+            {
+                Username = UserName,
+                Password = Password
+            });
+
+        NavigationManager.NavigateTo("");
+    }
+}

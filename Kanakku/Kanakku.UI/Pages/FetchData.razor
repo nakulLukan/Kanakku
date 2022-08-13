@@ -45,6 +45,5 @@ else
 	protected override async Task OnInitializedAsync()
 	{
 		forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-		var temp = await Mediator.Send(new SampleRequest());
 	}
 }
