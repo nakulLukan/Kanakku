@@ -1,0 +1,40 @@
+﻿@page "/manage-products"
+@using Kanakku.Application.Models.Product
+@using Kanakku.Application.Requests.Product
+@inject MediatR.IMediator Mediator
+@inject NavigationManager NavigationManager
+@using BlazorTable
+
+<h3>Manage Product</h3>
+<BSButton Color="BSColor.Primary" Target="modal5a" OnClick="() => SelectProduct(null)">Create new product</BSButton>
+
+<Table TableItem="ProductListDto" Items="Products" PageSize="15" SelectionType="SelectionType.Single" RowClickAction="SelectProduct">
+    <Column TableItem="ProductListDto" Title="Name" Field="@(x => x.Name)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="ProductListDto" Title="Short Code" Field="@(x => x.ShortCode)" Sortable="true" Filterable="true" Width="20%">
+    </Column>
+    <Column TableItem="ProductListDto" Title="Total Quantity" Field="@(x => x.TotalQuantity)" Sortable="true" Filterable="true" Width="20%" />
+    <Pager ShowPageNumber="true" ShowTotalCount="true" />
+</Table>
+
+@code {
+    private List<ProductListDto> Products { get; set; } = new();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Products = await Mediator.Send(new GetAllProductsQuery());
+            StateHasChanged();
+        }
+    }
+
+    private void SelectProduct(ProductListDto product)
+    {
+        int productId = 0;
+        if (product != null)
+        {
+            productId = product.Id;
+        }
+        NavigationManager.NavigateTo($"manage-products/{productId}");
+    }
+}

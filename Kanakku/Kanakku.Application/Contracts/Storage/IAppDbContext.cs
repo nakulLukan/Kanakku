@@ -16,6 +16,8 @@ public interface IAppDbContext
     DbSet<LookupMaster> LookupMasters { get; set; }
     DbSet<AppUser> AppUsers { get; set; }
     DbSet<Employee> Employees { get; set; }
+    DbSet<ProductSize> ProductSizes { get; set; }
+    DbSet<ProductInstance> ProductInstances { get; set; }
 
     int Save();
     Task<int> SaveAsync(CancellationToken cancellationToken);

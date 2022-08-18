@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kanakku.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220813163615_ImageIdAsNullable")]
-    partial class ImageIdAsNullable
+    [Migration("20220817154249_SizeSeeded")]
+    partial class SizeSeeded
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -72,8 +72,8 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("CreatedOn")
@@ -81,7 +81,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_on");
 
                     b.Property<int?>("ImageId")
-                        .IsRequired()
                         .HasColumnType("integer")
                         .HasColumnName("image_id");
 
@@ -90,8 +89,8 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
-                        .HasColumnType("text")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
                         .HasColumnName("modified_by");
 
                     b.Property<DateTime?>("ModifiedOn")
@@ -104,13 +103,113 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
+                    b.Property<string>("ShortCode")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("short_code");
+
                     b.HasKey("Id")
                         .HasName("pk_products");
 
                     b.HasIndex("ImageId")
                         .HasDatabaseName("ix_products_image_id");
 
+                    b.HasIndex("ShortCode")
+                        .IsUnique()
+                        .HasDatabaseName("ix_products_short_code");
+
                     b.ToTable("products", (string)null);
+                });
+
+            modelBuilder.Entity("Kanakku.Domain.Inventory.ProductInstance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("NetQuantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("net_quantity");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer")
+                        .HasColumnName("product_id");
+
+                    b.Property<int>("ProductSizeId")
+                        .HasColumnType("integer")
+                        .HasColumnName("product_size_id");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("integer")
+                        .HasColumnName("quantity");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_instances");
+
+                    b.HasIndex("ProductId")
+                        .HasDatabaseName("ix_product_instances_product_id");
+
+                    b.HasIndex("ProductSizeId")
+                        .HasDatabaseName("ix_product_instances_product_size_id");
+
+                    b.ToTable("product_instances", (string)null);
+                });
+
+            modelBuilder.Entity("Kanakku.Domain.Inventory.ProductSize", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("InternalName")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("internal_name");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.Property<string>("Size")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("size");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_sizes");
+
+                    b.ToTable("product_sizes", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            InternalName = "small",
+                            Order = 1,
+                            Size = "S"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            InternalName = "medium",
+                            Order = 2,
+                            Size = "M"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            InternalName = "large",
+                            Order = 3,
+                            Size = "L"
+                        });
                 });
 
             modelBuilder.Entity("Kanakku.Domain.Inventory.Work", b =>
@@ -136,7 +235,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("created_on");
 
                     b.Property<int?>("ImageId")
-                        .IsRequired()
                         .HasColumnType("integer")
                         .HasColumnName("image_id");
 
@@ -292,13 +390,16 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_on");
+
+                    b.Property<int?>("DependentLookupDetailId")
+                        .HasColumnType("integer")
+                        .HasColumnName("dependent_lookup_detail_id");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean")
@@ -309,7 +410,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("lookup_master_id");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("modified_by");
 
@@ -326,10 +426,203 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_lookup_details");
 
+                    b.HasIndex("DependentLookupDetailId")
+                        .HasDatabaseName("ix_lookup_details_dependent_lookup_detail_id");
+
                     b.HasIndex("LookupMasterId")
                         .HasDatabaseName("ix_lookup_details_lookup_master_id");
 
                     b.ToTable("lookup_details", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            LookupMasterId = 1,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Kerala"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            IsActive = true,
+                            LookupMasterId = 1,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Tamil Nadu"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Palakkad"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Ernakulam"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Trissur"
+                        },
+                        new
+                        {
+                            Id = 6,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Malappuram"
+                        },
+                        new
+                        {
+                            Id = 7,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Kozhikode"
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Alappuzha"
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Idukki"
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Kannur"
+                        },
+                        new
+                        {
+                            Id = 11,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Kasaragod"
+                        },
+                        new
+                        {
+                            Id = 12,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Alappuzha"
+                        },
+                        new
+                        {
+                            Id = 13,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Kollam"
+                        },
+                        new
+                        {
+                            Id = 14,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Kottayam"
+                        },
+                        new
+                        {
+                            Id = 15,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Pathanamthitta"
+                        },
+                        new
+                        {
+                            Id = 16,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Thiruvananthapuram"
+                        },
+                        new
+                        {
+                            Id = 17,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 1,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Wayanad"
+                        },
+                        new
+                        {
+                            Id = 18,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 2,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Coimbatore"
+                        },
+                        new
+                        {
+                            Id = 19,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupDetailId = 2,
+                            IsActive = true,
+                            LookupMasterId = 2,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "Chennai"
+                        });
                 });
 
             modelBuilder.Entity("Kanakku.Domain.Lookup.LookupMaster", b =>
@@ -342,13 +635,16 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CreatedBy")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("created_by");
 
                     b.Property<DateTime?>("CreatedOn")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_on");
+
+                    b.Property<int?>("DependentLookupMasterId")
+                        .HasColumnType("integer")
+                        .HasColumnName("dependent_lookup_master_id");
 
                     b.Property<string>("InternalName")
                         .IsRequired()
@@ -361,7 +657,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("is_active");
 
                     b.Property<string>("ModifiedBy")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("modified_by");
 
@@ -372,7 +667,29 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_lookup_masters");
 
+                    b.HasIndex("DependentLookupMasterId")
+                        .HasDatabaseName("ix_lookup_masters_dependent_lookup_master_id");
+
                     b.ToTable("lookup_masters", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            InternalName = "state",
+                            IsActive = true,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc),
+                            DependentLookupMasterId = 1,
+                            InternalName = "district",
+                            IsActive = true,
+                            ModifiedOn = new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc)
+                        });
                 });
 
             modelBuilder.Entity("Kanakku.Domain.User.AppUser", b =>
@@ -456,7 +773,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("email");
 
                     b.Property<int?>("ImageId")
-                        .IsRequired()
                         .HasColumnType("integer")
                         .HasColumnName("image_id");
 
@@ -517,6 +833,27 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.Navigation("Image");
                 });
 
+            modelBuilder.Entity("Kanakku.Domain.Inventory.ProductInstance", b =>
+                {
+                    b.HasOne("Kanakku.Domain.Inventory.Product", "Product")
+                        .WithMany("ProductInstances")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_instances_products_product_id");
+
+                    b.HasOne("Kanakku.Domain.Inventory.ProductSize", "ProductSize")
+                        .WithMany()
+                        .HasForeignKey("ProductSizeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_product_instances_product_sizes_product_size_id");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("ProductSize");
+                });
+
             modelBuilder.Entity("Kanakku.Domain.Inventory.Work", b =>
                 {
                     b.HasOne("Kanakku.Domain.Attachment.BinaryResource", "Image")
@@ -573,6 +910,13 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Kanakku.Domain.Lookup.LookupDetail", b =>
                 {
+                    b.HasOne("Kanakku.Domain.Lookup.LookupDetail", "DependentLookupDetail")
+                        .WithMany()
+                        .HasForeignKey("DependentLookupDetailId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lookup_details_lookup_details_dependent_lookup_detail_id");
+
                     b.HasOne("Kanakku.Domain.Lookup.LookupMaster", "LookupMaster")
                         .WithMany("LookupDetails")
                         .HasForeignKey("LookupMasterId")
@@ -580,7 +924,21 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_lookup_details_lookup_masters_lookup_master_id");
 
+                    b.Navigation("DependentLookupDetail");
+
                     b.Navigation("LookupMaster");
+                });
+
+            modelBuilder.Entity("Kanakku.Domain.Lookup.LookupMaster", b =>
+                {
+                    b.HasOne("Kanakku.Domain.Lookup.LookupMaster", "DependentLookupMaster")
+                        .WithMany()
+                        .HasForeignKey("DependentLookupMasterId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_lookup_masters_lookup_masters_dependent_lookup_master_id");
+
+                    b.Navigation("DependentLookupMaster");
                 });
 
             modelBuilder.Entity("Kanakku.Domain.User.AppUser", b =>
@@ -627,6 +985,8 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("Kanakku.Domain.Inventory.Product", b =>
                 {
+                    b.Navigation("ProductInstances");
+
                     b.Navigation("Works");
                 });
 

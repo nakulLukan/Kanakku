@@ -1,0 +1,142 @@
+﻿@page "/manage-employees"
+@using Kanakku.Application.Models.Lookup
+@using Kanakku.Application.Models.User
+@using Kanakku.Application.Requests.Lookup
+@using Kanakku.Application.Requests.User
+@inject MediatR.IMediator Mediator
+@using BlazorTable
+@using Kanakku.Shared
+
+<h1>Manage Employee</h1>
+
+<BSButton Color="BSColor.Primary" Target="modal5a">Create new employee</BSButton>
+
+<Table TableItem="EmployeeDto" Items="Employees" PageSize="15">
+    <Column TableItem="EmployeeDto" Title="Name" Field="@(x => x.Name)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="EmployeeDto" Title="Email" Field="@(x => x.Email)" Sortable="true" Filterable="true" Width="20%">
+    </Column>
+    <Column TableItem="EmployeeDto" Title="Phone Number" Field="@(x => x.PhoneNumber)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="EmployeeDto" Title="District" Field="@(x => x.District)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="EmployeeDto" Title="State" Field="@(x => x.State)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="EmployeeDto" Title="Pincode" Field="@(x => x.Pincode)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="EmployeeDto" Title="Address" Field="@(x => x.AddressLineOne)" Sortable="true" Filterable="true" Width="20%" />
+    <Column TableItem="EmployeeDto" Title="Manage" Field="@(x => x.Id)">
+        <Template>
+            <button @onclick="@(async()=> await EditEmployee(context))">Edit</button>
+        </Template>
+    </Column>
+    <Pager ShowPageNumber="true" ShowTotalCount="true" />
+</Table>
+
+
+<BSModal IsCentered="true" IsScrollable="true" DataId="modal5a" @ref="modal">
+    <Header>Employee Details</Header>
+    <Content>
+        <div class="mb-3">
+            <BSLabel>Name</BSLabel>
+            <BSInput InputType="InputType.Text" @bind-Value="Employee.Name" />
+        </div>
+        <div class="mb-3">
+            <BSLabel>Phone Number</BSLabel>
+            <BSInput InputType="InputType.Tel" @bind-Value="Employee.PhoneNumber" />
+        </div>
+        <div class="mb-3">
+            <BSLabel>Email Address</BSLabel>
+            <BSInput InputType="InputType.Email" @bind-Value="Employee.Email" />
+        </div>
+        <div class="mb-3">
+            <BSLabel>Address</BSLabel>
+            <BSInput InputType="InputType.TextArea" @bind-Value="Employee.AddressLineOne" />
+        </div>
+        <div class="mb-3">
+            <BSLabel>State</BSLabel>
+            <BSInput InputType="InputType.Select" @bind-Value="Employee.StateId">
+                <option value="0">Select</option>
+
+                @foreach (var state in States)
+                {
+                    <option value="@state.Id">@state.Value</option>
+                }
+            </BSInput>
+        </div>
+        <div class="mb-3">
+            <BSLabel>District</BSLabel>
+            <BSInput InputType="InputType.Select" @bind-Value="Employee.DistrictId">
+                <option value="0">Select</option>
+
+                @foreach (var state in Districts)
+                {
+                    <option value="@state.Id">@state.Value</option>
+                }
+            </BSInput>
+        </div>
+        <div class="mb-3">
+            <BSLabel>Pincode</BSLabel>
+            <BSInput InputType="InputType.Number" @bind-Value="Employee.Pincode" />
+        </div>
+    </Content>
+    <Footer Context="modal">
+        <BSButton MarginStart="Margins.Auto" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</BSButton>
+        <BSButton Color="BSColor.Primary" OnClick="CreateEmployee">Create</BSButton>
+    </Footer>
+</BSModal>
+
+@code {
+    private List<EmployeeDto> Employees { get; set; } = new();
+    private EmployeeDto Employee { get; set; } = new();
+    private List<LookupDetailDto> States { get; set; } = new();
+    private List<LookupDetailDto> Districts { get; set; } = new();
+    private BSModal modal;
+
+    protected override void OnInitialized()
+    {
+        Task.Run(async () =>
+        {
+            var statesLookupTask = Mediator.Send(new GetLookupByMasterQuery
+                {
+                    LookupMasterInternalName = LookupMasterInternalName.STATE
+                });
+            var districtsLookupTask = Mediator.Send(new GetLookupByMasterQuery
+                {
+                    LookupMasterInternalName = LookupMasterInternalName.DISTRICT
+                });
+
+            await Task.WhenAll(statesLookupTask, districtsLookupTask);
+            States = statesLookupTask.Result;
+            Districts = districtsLookupTask.Result;
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Employees = await Mediator.Send(new GetAllEmployeesQuery());
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateEmployee()
+    {
+
+        var empId = await Mediator.Send(new CreateEmployeeCommand()
+            {
+                Email = Employee.Email,
+                Name = Employee.Name,
+                PhoneNumber = Employee.PhoneNumber,
+                AddressLineOne = Employee.AddressLineOne,
+                DistrictId = Employee.DistrictId,
+                StateId = Employee.StateId,
+                Pincode = Employee.Pincode,
+            });
+        await modal.HideAsync();
+        Employees = await Mediator.Send(new GetAllEmployeesQuery());
+        StateHasChanged();
+    }
+
+    private async Task EditEmployee(EmployeeDto emp)
+    {
+        Employee = emp;
+        await modal.ShowAsync();
+    }
+}

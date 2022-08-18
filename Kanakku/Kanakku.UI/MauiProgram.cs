@@ -1,4 +1,6 @@
-﻿using Kanakku.Infrastructure;
+﻿using BlazorStrap;
+using BlazorTable;
+using Kanakku.Infrastructure;
 using Kanakku.Infrastructure.Persistence;
 using Kanakku.UI.Data;
 using MediatR;
@@ -29,7 +31,6 @@ public static class MauiProgram
         builder.Services.AddBlazorWebViewDeveloperTools();
 
 #endif
-        builder.Services.AddMediatR(typeof(Kanakku.Application.ServiceRegistry).Assembly);
         builder.Services.AddSingleton<WeatherForecastService>();
 
         builder.Services.Register();
@@ -39,6 +40,10 @@ public static class MauiProgram
         var dbContext = new AppDbContext(builder.Configuration);
         dbContext.Database.Migrate();
         dbContext.Dispose();
+
+        builder.Services.AddBlazorTable();
+        builder.Services.AddBlazorStrap();
+
         return builder.Build();
     }
 }

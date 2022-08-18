@@ -15,6 +15,7 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.User
             builder.Property(x => x.StateId).IsRequired();
             builder.Property(x => x.DistrictId).IsRequired();
             builder.Property(x => x.AddressLineOne).IsRequired().HasMaxLength(500);
+            builder.Property(x => x.ImageId).IsRequired(false);
 
             builder.HasOne(x => x.Image)
                 .WithMany()

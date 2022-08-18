@@ -10,6 +10,7 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.Inventory
         {
             builder.Property(x => x.Id).ValueGeneratedOnAdd();
             builder.Property(x => x.Name).IsRequired().HasMaxLength(255);
+            builder.Property(x => x.ImageId).IsRequired(false);
 
             builder.HasOne(x => x.Image)
                 .WithMany()

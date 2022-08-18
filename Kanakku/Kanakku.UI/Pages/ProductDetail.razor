@@ -1,0 +1,173 @@
+﻿@page "/manage-products/{ProductId:int}"
+@using BlazorTable
+@using Kanakku.Application.Models.Product
+@using Kanakku.Application.Requests.Product
+@using Kanakku.Shared
+@using Kanakku.Shared.Models
+@using Kanakku.UI.Contracts.Event
+@using Kanakku.UI.Extensions
+@inject IBlazorStrap BlazorStrap
+@inject IAppMediator AppMediator
+
+@if (ProductId != 0)
+{
+    <h3>@Details?.Name</h3>
+
+}
+
+<BSToaster />
+<BSModal IsCentered="true" IsScrollable="true" DataId="modal5a" @ref="modal">
+    <Header>Add Product</Header>
+    <Content>
+        <div class="mb-3">
+            <BSLabel>Name</BSLabel>
+            <BSInput InputType="InputType.Text" @bind-Value="Details.Name" />
+        </div>
+        <div class="mb-3">
+            <BSLabel>Short Code</BSLabel>
+            <BSInput InputType="InputType.Text" @bind-Value="Details.ShortCode" />
+        </div>
+
+        <div class="mb-3">
+            <BSLabel>Size</BSLabel>
+            @foreach (var variant in Details.ProductVariants)
+            {
+                <div class="row">
+                    <div class="col">
+                        <BSInput InputType="InputType.Select" @bind-Value="variant.SizeId">
+                            <option value="0">Select</option>
+                            @foreach (var size in Sizes)
+                            {
+                                <option value="@size.Id">@size.Value</option>
+                            }
+                        </BSInput>
+                    </div>
+                    <div class="col">
+                        <BSInput InputType="InputType.Number" @bind-Value="variant.Quantity" DisplayName="Quantity" />
+                    </div>
+                    <div class="col">
+                        <BSButton Color="BSColor.Danger" OnClick="() => RemoveSizeVariant(variant)">-</BSButton>
+                    </div>
+                </div>
+            }
+            <div class="row">
+                <div class="col">
+                    <BSInput InputType="InputType.Select" @bind-Value="Variant.SizeId">
+                        <option value="0">Select</option>
+                        @foreach (var size in Sizes.Where(x => !Details.ProductVariants.Select(y => y.SizeId).Contains(x.Id)))
+                        {
+                            <option value="@size.Id">@size.Value</option>
+                        }
+                    </BSInput>
+                </div>
+                <div class="col">
+                    <BSInput InputType="InputType.Number" @bind-Value="Variant.Quantity" DisplayName="Quantity" />
+                </div>
+                <div class="col">
+                    <BSButton Color="BSColor.Success" OnClick=" AddSizeVariant">+</BSButton>
+                </div>
+            </div>
+        </div>
+
+    </Content>
+    <Footer Context="modal">
+        <BSButton MarginStart="Margins.Auto" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</BSButton>
+        <BSButton Color="BSColor.Primary" OnClick="CreateProduct">Create</BSButton>
+    </Footer>
+</BSModal>
+
+@code {
+
+    [Parameter]
+    public int ProductId { get; set; }
+    private string Title { get; set; }
+    private ProductDetailDto Details { get; set; }
+    private ProductInstanceDto Variant { get; set; } = new();
+    private List<SizeDto> Sizes { get; set; } = new();
+    private BSModal modal;
+
+    protected override void OnInitialized()
+    {
+        Details = new()
+            {
+                ProductVariants = new()
+            };
+        Task.Run(async () =>
+        {
+            Sizes = (await AppMediator.Send(new GetAllSizeQuery())).Data;
+            StateHasChanged();
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (ProductId == 0)
+            {
+                await modal.ShowAsync();
+            }
+            else
+            {
+                _ = await AppMediator.Send(new GetProductDetailByIdQuery()
+                    {
+                        Id = ProductId
+                    })
+                    .OnSuccess(async (data) =>
+                    {
+                        Details = data;
+                        await InvokeAsync(StateHasChanged);
+                    })
+                    .OnError((error) =>
+                    {
+                        BlazorStrap.Toaster.Error("Error", error.Message);
+                    });
+            }
+        }
+    }
+
+    private void AddSizeVariant()
+    {
+        Details.ProductVariants.Add(Variant.Clone());
+        StateHasChanged();
+    }
+
+    private void RemoveSizeVariant(ProductInstanceDto variant)
+    {
+        Details.ProductVariants.Remove(variant);
+        StateHasChanged();
+    }
+
+    private async Task CreateProduct()
+    {
+        await AppMediator.Send(new AddProductCommand()
+            {
+                Id = Details.Id,
+                ImageId = Details.ImageId,
+                Name = Details.Name,
+                ShortCode = Details.ShortCode,
+                ProductVariants = Details.ProductVariants
+            })
+            .OnSuccess(async (data) =>
+            {
+                await modal.HideAsync();
+                ProductId = data;
+                Details = (await AppMediator.Send(new GetProductDetailByIdQuery()
+                    {
+                        Id = ProductId
+                    })).Data;
+
+                BlazorStrap.Toaster.Success("Success", "Product added successfully");
+                await InvokeAsync(() => StateHasChanged());
+            })
+            .OnError((err) =>
+            {
+                BlazorStrap.Toaster.Error(err.Type.ToString(), err.Message);
+            })
+            .OnErrors((errors) =>
+            {
+
+            });
+
+    }
+}

@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Kanakku.Application;
 
-public class ServiceRegistry
+public static class ServiceRegistry
 {
+    public static void RegisterInfrastructure(this IServiceCollection serviceCollection)
+    {
+    }
 }

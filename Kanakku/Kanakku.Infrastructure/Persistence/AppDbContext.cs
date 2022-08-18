@@ -3,6 +3,7 @@ using Kanakku.Domain.Attachment;
 using Kanakku.Domain.Inventory;
 using Kanakku.Domain.Lookup;
 using Kanakku.Domain.User;
+using Kanakku.Infrastructure.Seeder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
@@ -31,6 +32,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<LookupMaster> LookupMasters { get; set; }
     public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<Employee> Employees { get; set; }
+    public DbSet<ProductSize> ProductSizes { get; set; }
+    public DbSet<ProductInstance> ProductInstances { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -50,6 +53,8 @@ public class AppDbContext : DbContext, IAppDbContext
                 i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)
             )
         );
+
+        modelBuilder.SeedData();
     }
 
     public int Save()
