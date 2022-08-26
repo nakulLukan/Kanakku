@@ -26,13 +26,19 @@ namespace Kanakku.Application.Requests.Product
                 ImageId = x.ImageId,
                 Name = x.Name,
                 ShortCode = x.ShortCode,
+                Works = x.Works.Where(y => !y.IsPayPerHour).Select(y => new WorkDto
+                {
+                    Id = y.Id,
+                    Rate = y.Cost,
+                    WorkName = y.Name
+                }).ToList(),
                 ProductVariants = x.ProductInstances.Select(y => new ProductInstanceDto
                 {
                     Id = y.Id,
                     Quantity = y.Quantity,
                     SizeId = y.ProductSizeId,
                 }).ToList()
-            }).SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
+            }).SingleAsync(x => x.Id == request.Id, cancellationToken);
         }
     }
 }

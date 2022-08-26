@@ -6,15 +6,19 @@
 @using BlazorTable
 
 <h3>Manage Product</h3>
-<BSButton Color="BSColor.Primary" Target="modal5a" OnClick="() => SelectProduct(null)">Create new product</BSButton>
+<div>
+    <BSButton Color="BSColor.Primary" Target="modal5a" OnClick="() => SelectProduct(null)">Create new product</BSButton>
+</div>
 
-<Table TableItem="ProductListDto" Items="Products" PageSize="15" SelectionType="SelectionType.Single" RowClickAction="SelectProduct">
-    <Column TableItem="ProductListDto" Title="Name" Field="@(x => x.Name)" Sortable="true" Filterable="true" Width="20%" />
-    <Column TableItem="ProductListDto" Title="Short Code" Field="@(x => x.ShortCode)" Sortable="true" Filterable="true" Width="20%">
-    </Column>
-    <Column TableItem="ProductListDto" Title="Total Quantity" Field="@(x => x.TotalQuantity)" Sortable="true" Filterable="true" Width="20%" />
-    <Pager ShowPageNumber="true" ShowTotalCount="true" />
-</Table>
+<div class="mt-1">
+    <Table TableItem="ProductListDto" Items="Products" PageSize="15" SelectionType="SelectionType.Single" RowClickAction="SelectProduct">
+        <Column TableItem="ProductListDto" Title="Name" Field="@(x => x.Name)" Sortable="true" Filterable="true" Width="20%" />
+        <Column TableItem="ProductListDto" Title="Short Code" Field="@(x => x.ShortCode)" Sortable="true" Filterable="true" Width="20%">
+        </Column>
+        <Column TableItem="ProductListDto" Title="Total Quantity" Field="@(x => x.TotalQuantity)" Sortable="true" Filterable="true" Width="20%" />
+        <Pager ShowPageNumber="true" ShowTotalCount="true" />
+    </Table>
+</div>
 
 @code {
     private List<ProductListDto> Products { get; set; } = new();

@@ -6,6 +6,7 @@
         public string Name { get; set; }
         public string ShortCode { get; set; }
         public List<ProductInstanceDto> ProductVariants { get; set; }
+        public List<WorkDto> Works { get; set; }
         public int? ImageId { get; set; }
     }
 }

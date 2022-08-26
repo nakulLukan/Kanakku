@@ -1,23 +1,50 @@
 ﻿@page "/manage-products/{ProductId:int}"
 @using BlazorTable
 @using Kanakku.Application.Models.Product
+@using Kanakku.Application.Requests.Attachment
 @using Kanakku.Application.Requests.Product
 @using Kanakku.Shared
+@using Kanakku.Shared.Extensions
 @using Kanakku.Shared.Models
 @using Kanakku.UI.Contracts.Event
 @using Kanakku.UI.Extensions
 @inject IBlazorStrap BlazorStrap
 @inject IAppMediator AppMediator
-
-@if (ProductId != 0)
-{
-    <h3>@Details?.Name</h3>
-
-}
-
 <BSToaster />
+
+<BSContainer>
+
+    @if (ProductId != 0)
+    {
+        <BSRow>
+            <BSCol>
+                <h3>@Details?.Name</h3>
+            </BSCol>
+        </BSRow>
+        <BSRow>
+            <BSCol Column="12" ColumnLarge="6" Class="flex-column">
+                <BSButton Color="BSColor.Primary" OnClick="()=> operationModal.ShowAsync()">Create Operation</BSButton>
+                <div class="mt-1">
+                <Table TableItem="WorkDto" Items="Details.Works" PageSize="15">
+                    <Column TableItem="WorkDto" Title="Operation" Field="@(x => x.WorkName)" Sortable="true" Filterable="true" Width="50%" />
+                    <Column TableItem="WorkDto" Title="Rate" Field="@(x => x.Rate)" Sortable="true" Filterable="true" Width="50%" />
+                </Table>
+                </div>
+            </BSCol>
+            <BSCol Class="text-center">
+                <BSImage IsFluid=true IsRounded=true src="@ProductImage" Class="product-dp" />
+                <div class="custom-file text-center mt-3">
+                    <InputFile type="file" class="custom-file-input d-none" id="product-dp" OnChange="OnFileChange" />
+                    <BSLabel class="custom-file-label btn btn-primary" for="product-dp"><span class="oi oi-data-transfer-upload"></span> Upload</BSLabel>
+                </div>
+            </BSCol>
+        </BSRow>
+    }
+
+</BSContainer>
+
 <BSModal IsCentered="true" IsScrollable="true" DataId="modal5a" @ref="modal">
-    <Header>Add Product</Header>
+    <Header><h5 class="modal-title">Add Product</h5></Header>
     <Content>
         <div class="mb-3">
             <BSLabel>Name</BSLabel>
@@ -76,6 +103,25 @@
     </Footer>
 </BSModal>
 
+
+<BSModal IsCentered="true" IsScrollable="false" @ref="operationModal">
+    <Header><h5 class="modal-title">Add Operation</h5></Header>
+    <Content>
+        <div class="mb-3">
+            <BSLabel>Operation Name</BSLabel>
+            <BSInput InputType="InputType.Text" @bind-Value="Operation.WorkName" />
+        </div>
+        <div class="mb-3">
+            <BSLabel>Rate</BSLabel>
+            <BSInput InputType="InputType.Number" @bind-Value="Operation.Rate" />
+        </div>
+    </Content>
+    <Footer Context="modal">
+        <BSButton MarginStart="Margins.Auto" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</BSButton>
+        <BSButton Color="BSColor.Primary" OnClick="CreateOperation">Create</BSButton>
+    </Footer>
+</BSModal>
+
 @code {
 
     [Parameter]
@@ -83,8 +129,11 @@
     private string Title { get; set; }
     private ProductDetailDto Details { get; set; }
     private ProductInstanceDto Variant { get; set; } = new();
+    private WorkDto Operation { get; set; } = new();
     private List<SizeDto> Sizes { get; set; } = new();
     private BSModal modal;
+    private BSModal operationModal;
+    private string ProductImage { get; set; }
 
     protected override void OnInitialized()
     {
@@ -116,6 +165,14 @@
                     .OnSuccess(async (data) =>
                     {
                         Details = data;
+                        await AppMediator.Send(new ResourceQuery()
+                            {
+                                ResourceId = data.ImageId ?? 0
+                            })
+                        .OnSuccess(data =>
+                        {
+                            ProductImage = data.Base64String.ToImgSource();
+                        });
                         await InvokeAsync(StateHasChanged);
                     })
                     .OnError((error) =>
@@ -128,7 +185,15 @@
 
     private void AddSizeVariant()
     {
+        if (Variant.SizeId == 0 || Variant.Quantity <= 0)
+        {
+            return;
+        }
         Details.ProductVariants.Add(Variant.Clone());
+
+        Variant.Quantity = 0;
+        Variant.SizeId = 0;
+        Variant.Id = 0;
         StateHasChanged();
     }
 
@@ -163,11 +228,52 @@
             .OnError((err) =>
             {
                 BlazorStrap.Toaster.Error(err.Type.ToString(), err.Message);
-            })
-            .OnErrors((errors) =>
-            {
-
             });
 
     }
+
+    private async Task CreateOperation()
+    {
+        await operationModal.HideAsync();
+    }
+
+    private async Task OnFileChange(InputFileChangeEventArgs e)
+    {
+        await AppMediator.Send(new ResourceCommand
+            {
+                Id = Details.ImageId ?? 0,
+                DataStream = e.File.OpenReadStream(maxAllowedSize: Constant.FILE_PICKER_MAX_LENGTH)
+            })
+            .OnSuccess(async data =>
+            {
+                Details.ImageId = data.Id;
+                await AppMediator.Send(new SaveProductImageCommand()
+                    {
+                        ImageId = data.Id,
+                        ProductId = Details.Id
+                    })
+                    .OnSuccess(async x =>
+                    {
+                        BlazorStrap.Toaster.Success("Success", "Image uploaded successfully");
+                        ProductImage = data.Base64String.ToImgSource();
+                        await InvokeAsync(StateHasChanged);
+                    })
+                    .OnError(err =>
+                    {
+                        BlazorStrap.Toaster.Error("Failed to save image", err.Message);
+                    });
+            })
+            .OnError(err =>
+            {
+                BlazorStrap.Toaster.Error("Failed to save image", err.Message);
+            })
+            .OnErrors(err =>
+            {
+                err.ForEach(x =>
+                {
+                    BlazorStrap.Toaster.Error("Failed to save image", x.Message);
+                });
+            });
+    }
+
 }

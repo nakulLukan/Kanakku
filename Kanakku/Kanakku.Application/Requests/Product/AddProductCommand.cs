@@ -3,7 +3,6 @@ using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.Product;
 using Kanakku.Domain.Inventory;
 using Kanakku.Shared.Models;
-using Kanakku.Shared.Utilities;
 using MediatR;
 
 namespace Kanakku.Application.Requests.Product;
@@ -51,6 +50,10 @@ public class AddProductCommandValidator : AbstractValidator<AddProductCommand>
     public AddProductCommandValidator()
     {
         RuleFor(x => x.ShortCode).NotEmpty();
+        RuleFor(x => x.Name).NotEmpty();
+        RuleFor(x => x.ProductVariants).NotNull().NotEmpty();
+
+        RuleForEach(x => x.ProductVariants)
+            .Must(variant => variant.SizeId > 0 && variant.Quantity > 0);
     }
 }
-

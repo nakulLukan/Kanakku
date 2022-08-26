@@ -21,4 +21,5 @@ public interface IAppDbContext
 
     int Save();
     Task<int> SaveAsync(CancellationToken cancellationToken);
+    void ChangePropertyStateToModified<TEntity>(TEntity entity, string property);
 }

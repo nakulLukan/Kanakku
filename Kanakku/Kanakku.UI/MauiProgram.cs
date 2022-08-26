@@ -36,11 +36,14 @@ public static class MauiProgram
         builder.Services.Register();
         builder.Services.RegisterInfrastructure();
 
-        // Run db migration
-        var dbContext = new AppDbContext(builder.Configuration);
-        dbContext.Database.Migrate();
-        dbContext.Dispose();
-
+        Task.Run(() =>
+        {
+            // Run db migration
+            var dbContext = new AppDbContext(builder.Configuration);
+            dbContext.Database.Migrate();
+            dbContext.Dispose();
+        });
+        
         builder.Services.AddBlazorTable();
         builder.Services.AddBlazorStrap();
 

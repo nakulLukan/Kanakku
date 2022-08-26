@@ -66,4 +66,10 @@ public class AppDbContext : DbContext, IAppDbContext
     {
         return await base.SaveChangesAsync(cancellationToken);
     }
+
+    public void ChangePropertyStateToModified<TEntity>(TEntity entity, string property)
+    {
+        Entry(entity).Property(property).IsModified = true;
+    }
+
 }

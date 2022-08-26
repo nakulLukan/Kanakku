@@ -35,6 +35,7 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, AppUserMinDto>
         }
 
         await _appSecureStorage.SetAsync(SecureStorageKey.IS_LOGGED, true);
+        await _appSecureStorage.SetAsync(SecureStorageKey.USER_ID, userDetails.Id);
 
         return new AppUserMinDto()
         {
