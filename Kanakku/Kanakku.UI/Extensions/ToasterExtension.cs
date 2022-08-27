@@ -4,7 +4,10 @@ namespace Kanakku.UI.Extensions
 {
     public static class ToasterExtension
     {
-        public static void Success(this Toaster toaster, string header, string content, int duration = 3)
+        public static void Success(this Toaster toaster, 
+            string header = "Success", 
+            string content = "Success", 
+            int duration = 3)
         {
             toaster.Add(header, content, o =>
             {
@@ -13,7 +16,10 @@ namespace Kanakku.UI.Extensions
             });
         }
 
-        public static void Error(this Toaster toaster, string header, string content, int duration = 3)
+        public static void Error(this Toaster toaster, 
+            string header, 
+            string content,
+            int duration = 3)
         {
             toaster.Add(header, content, o =>
             {

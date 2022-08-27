@@ -43,7 +43,7 @@ public class AppMediator : IAppMediator
         }
         catch (ValidationException ex)
         {
-            return new ResponseDto<TResponse>(ex.Errors.Select(x => new FieldErrorDto(x.PropertyName, x.ErrorMessage)));
+            return new ResponseDto<TResponse>(new FormError(ex.Errors));
         }
         catch (AppException ex)
         {

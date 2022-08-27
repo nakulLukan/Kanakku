@@ -8,6 +8,8 @@ public class ResponseDto<TData>
 
     public ErrorDto Error { get; set; }
 
+    public FormError FormError { get; set; }
+
     public ResponseDto(TData data)
     {
         Data = data;
@@ -18,9 +20,15 @@ public class ResponseDto<TData>
         Errors = errors.ToList();
     }
 
+
     public ResponseDto(ErrorDto error)
     {
         Error = error;
+    }
+
+    public ResponseDto(FormError formError)
+    {
+        FormError = formError;
     }
 
     public bool HasData()
@@ -30,6 +38,7 @@ public class ResponseDto<TData>
 
     public bool HasErrors => (Errors is not null && Errors.Any());
     public bool HasError => Error is not null;
+    public bool HasFormError => FormError is not null;
 
     public static ResponseDto<TData> ShowOopsError(string message)
     {

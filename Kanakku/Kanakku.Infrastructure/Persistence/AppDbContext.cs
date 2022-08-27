@@ -16,10 +16,12 @@ public class AppDbContext : DbContext, IAppDbContext
 
     public AppDbContext()
     {
+        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
     }
 
     public AppDbContext(IConfiguration configuration)
     {
+        ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         this.configuration = configuration;
     }
 

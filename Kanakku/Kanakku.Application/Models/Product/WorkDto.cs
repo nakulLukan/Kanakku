@@ -5,5 +5,6 @@
         public int Id { get; set; }
         public string WorkName { get; set; }
         public float Rate { get; set; }
+        public int ProductId { get; set; }
     }
 }

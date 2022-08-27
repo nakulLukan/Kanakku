@@ -1,11 +1,12 @@
 ﻿@page "/manage-products"
 @using Kanakku.Application.Models.Product
 @using Kanakku.Application.Requests.Product
-@inject MediatR.IMediator Mediator
-@inject NavigationManager NavigationManager
 @using BlazorTable
+@using Kanakku.UI.Contracts.Event
+@inject IAppMediator AppMediator
+@inject NavigationManager NavigationManager
 
-<h3>Manage Product</h3>
+<h3>Manage Products</h3>
 <div>
     <BSButton Color="BSColor.Primary" Target="modal5a" OnClick="() => SelectProduct(null)">Create new product</BSButton>
 </div>
@@ -21,14 +22,23 @@
 </div>
 
 @code {
-    private List<ProductListDto> Products { get; set; } = new();
+    private List<ProductListDto> Products { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Products = new();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            Products = await Mediator.Send(new GetAllProductsQuery());
-            StateHasChanged();
+            await AppMediator.Send(new GetAllProductsQuery())
+                .OnSuccess(async data =>
+                {
+                    Products = data;
+                    await InvokeAsync(StateHasChanged);
+                });
         }
     }
 

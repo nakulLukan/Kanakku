@@ -10,25 +10,28 @@
 @using Kanakku.UI.Extensions
 @inject IBlazorStrap BlazorStrap
 @inject IAppMediator AppMediator
+
 <BSToaster />
 
-<BSContainer>
-
-    @if (ProductId != 0)
-    {
+@if (ProductId != 0)
+{
+    <BSContainer>
         <BSRow>
             <BSCol>
                 <h3>@Details?.Name</h3>
             </BSCol>
         </BSRow>
-        <BSRow>
+        <BSRow Class="mt-4">
             <BSCol Column="12" ColumnLarge="6" Class="flex-column">
                 <BSButton Color="BSColor.Primary" OnClick="()=> operationModal.ShowAsync()">Create Operation</BSButton>
                 <div class="mt-1">
-                <Table TableItem="WorkDto" Items="Details.Works" PageSize="15">
-                    <Column TableItem="WorkDto" Title="Operation" Field="@(x => x.WorkName)" Sortable="true" Filterable="true" Width="50%" />
-                    <Column TableItem="WorkDto" Title="Rate" Field="@(x => x.Rate)" Sortable="true" Filterable="true" Width="50%" />
-                </Table>
+                    <Table TableItem="WorkDto" Items="Details.Works" PageSize="15" RowClickAction="(async x=> await OnOperationSelect(x))">
+                        <Column TableItem="WorkDto" Title="Operation" Field="@(x => x.WorkName)" Sortable="true" Filterable="true" Width="50%" />
+                        <Column TableItem="WorkDto" Title="Rate" Field="@(x => x.Rate)" Format="c2" Sortable="true" Filterable="true" Width="50%" />
+                        @if(Details.Works!=null){
+                            <BSLabel>Total: <b>@Details.Works.Sum(x=>x.Rate)</b></BSLabel>
+                        }
+                    </Table>
                 </div>
             </BSCol>
             <BSCol Class="text-center">
@@ -39,10 +42,11 @@
                 </div>
             </BSCol>
         </BSRow>
-    }
 
-</BSContainer>
+    </BSContainer>
+}
 
+@*Add product modal*@
 <BSModal IsCentered="true" IsScrollable="true" DataId="modal5a" @ref="modal">
     <Header><h5 class="modal-title">Add Product</h5></Header>
     <Content>
@@ -103,22 +107,63 @@
     </Footer>
 </BSModal>
 
-
+@*Operation modal*@
 <BSModal IsCentered="true" IsScrollable="false" @ref="operationModal">
     <Header><h5 class="modal-title">Add Operation</h5></Header>
     <Content>
+        <form @onreset="OnOperationFormReset" @onsubmit="OnOperationFormSubmit">
+            <div class="mb-3">
+                <BSLabel>Operation Name</BSLabel>
+                <BSInput InputType="InputType.Text" @bind-Value="Operation.WorkName" required
+                         Class="@OperationFormError.IsInvalid(nameof(AddOperationCommand.OperationName))" />
+                <div class="invalid-feedback">
+                    @OperationFormError.GetError(nameof(AddOperationCommand.OperationName))
+                </div>
+            </div>
+            <div class="mb-3">
+                <BSLabel>Rate </BSLabel>
+                <div class="input-group">
+                    <span class="input-group-text">Rs.</span>
+                    <BSInput InputType="InputType.Number" @bind-Value="Operation.Rate" required />
+                </div>
+            </div>
+            <div class="d-flex flex-row justify-content-between mt-4">
+                <BSButton Color="BSColor.Light" IsReset=true>Reset</BSButton>
+                <BSButton Color="BSColor.Success" IsSubmit=true>Add Operation</BSButton>
+            </div>
+        </form>
+    </Content>
+</BSModal>
+
+@*Edit Operation modal*@
+<BSModal IsCentered="true" IsScrollable="false" @ref="editOperationModal">
+    <Header><h5 class="modal-title">Edit Operation</h5></Header>
+    <Content>
         <div class="mb-3">
             <BSLabel>Operation Name</BSLabel>
-            <BSInput InputType="InputType.Text" @bind-Value="Operation.WorkName" />
+            <BSInput InputType="InputType.Text" @bind-Value="Operation.WorkName" required
+                     Class="@OperationFormError.IsInvalid(nameof(AddOperationCommand.OperationName))" />
+            <div class="invalid-feedback">
+                @OperationFormError.GetError(nameof(AddOperationCommand.OperationName))
+            </div>
         </div>
         <div class="mb-3">
-            <BSLabel>Rate</BSLabel>
-            <BSInput InputType="InputType.Number" @bind-Value="Operation.Rate" />
+            <BSLabel>Rate </BSLabel>
+            <div class="input-group">
+                <span class="input-group-text">Rs.</span>
+                <BSInput InputType="InputType.Number" @bind-Value="Operation.Rate" required
+                        Class="@OperationFormError.IsInvalid(nameof(AddOperationCommand.Rate))" />
+                <div class="invalid-feedback">
+                    @OperationFormError.GetError(nameof(AddOperationCommand.Rate))
+                </div>
+            </div>
         </div>
     </Content>
-    <Footer Context="modal">
-        <BSButton MarginStart="Margins.Auto" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</BSButton>
-        <BSButton Color="BSColor.Primary" OnClick="CreateOperation">Create</BSButton>
+    <Footer>
+        <div class="d-flex flex-row justify-content-between w-100">
+            <BSButton Color="BSColor.Light" IsReset=true OnClick="OnOperationFormReset">Reset</BSButton>
+            <BSButton Color="BSColor.Success" IsSubmit=true OnClick="OnOperationFormSubmit">Save</BSButton>
+        </div>
     </Footer>
 </BSModal>
 
@@ -130,10 +175,13 @@
     private ProductDetailDto Details { get; set; }
     private ProductInstanceDto Variant { get; set; } = new();
     private WorkDto Operation { get; set; } = new();
+    private WorkDto OperationReset { get; set; } = new();
+    private FormError OperationFormError { get; set; }
     private List<SizeDto> Sizes { get; set; } = new();
+    private string ProductImage { get; set; } = DirectoryConstant.DFAULT_PRODUCT_IMAGE_PLACEHOLDER;
     private BSModal modal;
     private BSModal operationModal;
-    private string ProductImage { get; set; }
+    private BSModal editOperationModal;
 
     protected override void OnInitialized()
     {
@@ -171,7 +219,7 @@
                             })
                         .OnSuccess(data =>
                         {
-                            ProductImage = data.Base64String.ToImgSource();
+                            ProductImage = data.Base64String.ToProductImgSource();
                         });
                         await InvokeAsync(StateHasChanged);
                     })
@@ -232,9 +280,83 @@
 
     }
 
-    private async Task CreateOperation()
+    private async Task OnOperationFormSubmit()
     {
-        await operationModal.HideAsync();
+        Operation.ProductId = Details.Id;
+        if (Operation.Id > 0)
+        {
+            await AppMediator.Send(new EditOperationCommand()
+                {
+                    OperationName = Operation.WorkName,
+                    WordId = Operation.Id,
+                    Rate = Operation.Rate
+                })
+                .OnSuccess(async data =>
+                {
+                    await editOperationModal.HideAsync();
+                    BlazorStrap.Toaster.Success(content: "Operation updated successfully");
+                    await AppMediator.Send(new GetProductDetailByIdQuery()
+                        {
+                            Id = ProductId
+                        })
+                    .OnSuccess(async data =>
+                    {
+                        Operation = OperationReset = new();
+                        Details = data;
+                        await InvokeAsync(StateHasChanged);
+                    });
+                })
+                .OnError(err =>
+                {
+                    BlazorStrap.Toaster.Error("Failed", err.Message);
+                })
+                .OnFormError(async err =>
+                {
+                    OperationFormError = err;
+                    await InvokeAsync(StateHasChanged);
+                });
+        }
+        else
+        {
+            await AppMediator.Send(new AddOperationCommand()
+                {
+                    OperationName = Operation.WorkName,
+                    ProductId = Operation.ProductId,
+                    Rate = Operation.Rate
+                })
+                .OnSuccess(async data =>
+                {
+                    Operation.Id = data;
+                    await operationModal.HideAsync();
+                    await AppMediator.Send(new GetProductDetailByIdQuery()
+                        {
+                            Id = ProductId
+                        })
+                    .OnSuccess(async data =>
+                    {
+                        Operation = new();
+                        OperationFormError = null;
+                        Details = data;
+                        await InvokeAsync(StateHasChanged);
+                    });
+                })
+                .OnError(err =>
+                {
+                    BlazorStrap.Toaster.Error("Failed", err.Message);
+                })
+                .OnFormError(async err =>
+                {
+                    OperationFormError = err;
+                    BlazorStrap.Toaster.Success("Success", "Operation added successfully");
+                    await InvokeAsync(StateHasChanged);
+                });
+        }
+    }
+
+    private void OnOperationFormReset()
+    {
+        Operation = OperationReset.Clone();
+        StateHasChanged();
     }
 
     private async Task OnFileChange(InputFileChangeEventArgs e)
@@ -255,7 +377,7 @@
                     .OnSuccess(async x =>
                     {
                         BlazorStrap.Toaster.Success("Success", "Image uploaded successfully");
-                        ProductImage = data.Base64String.ToImgSource();
+                        ProductImage = data.Base64String.ToProductImgSource();
                         await InvokeAsync(StateHasChanged);
                     })
                     .OnError(err =>
@@ -267,13 +389,18 @@
             {
                 BlazorStrap.Toaster.Error("Failed to save image", err.Message);
             })
-            .OnErrors(err =>
+            .OnFormError(err =>
             {
-                err.ForEach(x =>
-                {
-                    BlazorStrap.Toaster.Error("Failed to save image", x.Message);
-                });
+
             });
     }
 
+    private async Task OnOperationSelect(WorkDto selectedItem)
+    {
+        OperationFormError = null;
+        Operation = selectedItem.Clone();
+        OperationReset = selectedItem.Clone();
+        StateHasChanged();
+        await editOperationModal.ShowAsync();
+    }
 }

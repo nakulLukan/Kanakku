@@ -8,7 +8,7 @@ namespace Kanakku.UI.Extensions
                 Action<TData> callback)
         {
             var res = await response.ConfigureAwait(false);
-            if (res.HasErrors || res.HasError)
+            if (res.HasErrors || res.HasError || res.HasFormError)
             {
                 return res;
             }
@@ -30,18 +30,17 @@ namespace Kanakku.UI.Extensions
             return res;
         }
 
-        public static async Task<ResponseDto<TData>> OnErrors<TData>(this Task<ResponseDto<TData>> response,
-            Action<List<FieldErrorDto>> callback)
+        public static async Task<ResponseDto<TData>> OnFormError<TData>(this Task<ResponseDto<TData>> response,
+            Action<FormError> callback)
         {
             var res = await response.ConfigureAwait(false);
-            if (!res.HasErrors)
+            if (!res.HasFormError)
             {
                 return res;
             }
 
-            callback(res.Errors);
+            callback(res.FormError);
             return res;
         }
     }
-
 }
