@@ -16,6 +16,7 @@ public static class DirectoryConstant
 {
     public const string BINARY_RESOURCE_FORMAT = "{0}/Kanakku/Binary Resources";
     public const string DFAULT_PRODUCT_IMAGE_PLACEHOLDER = "./assets/images/default-product-placeholder.png";
+    public const string DFAULT_IMAGE_PLACEHOLDER = "./assets/images/default-product-placeholder.png";
 }
 
 public static class Constant
@@ -26,5 +27,13 @@ public static class Constant
 
 public static class AppRegex
 {
-    public const string NAME = "^[a-zA-Z]+$";
+    public const string NAME = "^[a-zA-Z ]+$";
+    public const string PHONE_NUMBER = "^[+]?[0-9]+$";
+    public const string PINCODE = "^[0-9]{6,}$";
+    public const string EMAIL = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$";
+}
+
+public static class UIComp
+{
+    public const string TABLE_HEIGHT_DEFAULT = "60vh";
 }

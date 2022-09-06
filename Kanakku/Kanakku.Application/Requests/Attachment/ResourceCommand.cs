@@ -12,6 +12,7 @@ public class ResourceCommand : IRequest<BinaryResourceDto>
 {
     public int Id { get; set; }
     public Stream DataStream { get; set; }
+    public string FileFullName { get; set; }
 }
 
 public class ResourceCommandHandler : IRequestHandler<ResourceCommand, BinaryResourceDto>
@@ -40,7 +41,10 @@ public class ResourceCommandHandler : IRequestHandler<ResourceCommand, BinaryRes
             ModifiedOn = DateTime.UtcNow,
             CreatedBy = userId,
             ModifiedBy = userId,
-            Data = bytearray
+            Data = bytearray,
+            FileFullName = request.FileFullName,
+            Extension = !string.IsNullOrEmpty(request.FileFullName) ? Path.GetExtension(request.FileFullName) : string.Empty,
+            FileName = !string.IsNullOrEmpty(request.FileFullName) ? Path.GetFileNameWithoutExtension(request.FileFullName) : string.Empty
         };
 
         if (resource.Id > 0)

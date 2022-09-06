@@ -1,5 +1,5 @@
 ﻿@page "/manage-products/{ProductId:int}"
-@using BlazorTable
+@using Kanakku.Application.Contracts.Presentation
 @using Kanakku.Application.Models.Product
 @using Kanakku.Application.Requests.Attachment
 @using Kanakku.Application.Requests.Product
@@ -8,186 +8,220 @@
 @using Kanakku.Shared.Models
 @using Kanakku.UI.Contracts.Event
 @using Kanakku.UI.Extensions
-@inject IBlazorStrap BlazorStrap
+@inject IToastService ToastService;
 @inject IAppMediator AppMediator
+@inject NavigationManager NavigationManager;
 
-<BSToaster />
 
 @if (ProductId != 0)
 {
-    <BSContainer>
-        <BSRow>
-            <BSCol>
-                <h3>@Details?.Name</h3>
-            </BSCol>
-        </BSRow>
-        <BSRow Class="mt-4">
-            <BSCol Column="12" ColumnLarge="6" Class="flex-column">
-                <BSButton Color="BSColor.Primary" OnClick="()=> operationModal.ShowAsync()">Create Operation</BSButton>
-                <div class="mt-1">
-                    <Table TableItem="WorkDto" Items="Details.Works" PageSize="15" RowClickAction="(async x=> await OnOperationSelect(x))">
-                        <Column TableItem="WorkDto" Title="Operation" Field="@(x => x.WorkName)" Sortable="true" Filterable="true" Width="50%" />
-                        <Column TableItem="WorkDto" Title="Rate" Field="@(x => x.Rate)" Format="c2" Sortable="true" Filterable="true" Width="50%" />
-                        @if(Details.Works!=null){
-                            <BSLabel>Total: <b>@Details.Works.Sum(x=>x.Rate)</b></BSLabel>
-                        }
-                    </Table>
-                </div>
-            </BSCol>
-            <BSCol Class="text-center">
-                <BSImage IsFluid=true IsRounded=true src="@ProductImage" Class="product-dp" />
-                <div class="custom-file text-center mt-3">
-                    <InputFile type="file" class="custom-file-input d-none" id="product-dp" OnChange="OnFileChange" />
-                    <BSLabel class="custom-file-label btn btn-primary" for="product-dp"><span class="oi oi-data-transfer-upload"></span> Upload</BSLabel>
-                </div>
-            </BSCol>
-        </BSRow>
-
-    </BSContainer>
+    <div class="d-flex flex-column flex-sm-row gap-4">
+        <div class="d-flex flex-1">
+            <div class="w-100">
+                <MudTable Items="@productDetails.Works" FixedHeader=true FixedFooter=true Hover="true" Breakpoint="Breakpoint.Sm"
+                      LoadingProgressColor="Color.Info" Striped=true Bordered=true Elevation="1" Class="w-100"
+                      Height="@UIComp.TABLE_HEIGHT_DEFAULT"
+                      T="WorkDto" OnRowClick="(e=> OnOperationSelect(e.Item))">
+                    <ToolBarContent>
+                        <div class="d-flex flex-row justify-space-between w-100">
+                            <MudText Typo="Typo.h6">@productDetails.Name</MudText>
+                            <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> addOperationDialogVisible = true)">Add Operation</MudButton>
+                        </div>
+                    </ToolBarContent>
+                    <HeaderContent>
+                        <MudTh>Operation</MudTh>
+                        <MudTh>Rate</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Operation">@context.WorkName</MudTd>
+                        <MudTd DataLabel="Rate">@context.Rate.ToCurrency()</MudTd>
+                    </RowTemplate>
+                    <FooterContent>
+                        <MudTh><MudText Typo="Typo.subtitle1">Total</MudText></MudTh>
+                        <MudTh><MudText Typo="Typo.subtitle1">@productDetails.Works.Sum(x => x.Rate).ToCurrency()</MudText></MudTh>
+                    </FooterContent>
+                    <PagerContent>
+                        <MudTablePager />
+                    </PagerContent>
+                </MudTable>
+            </div>
+        </div>
+        <div class="d-flex flex-column mx-auto">
+            <MudImage Src="@ProductImage" ObjectFit="ObjectFit.ScaleDown" Class="rounded-lg product-dp" />
+            <div class="mx-auto">
+                <InputFile id="productImage" OnChange="OnFileChange" hidden multiple accept=".jpg, .jpeg, .png" />
+                <MudButton Class="mt-2" HtmlTag="label"
+                       Variant="MudBlazor.Variant.Filled"
+                       Color="Color.Primary"
+                       StartIcon="@Icons.Filled.CloudUpload"
+                       for="productImage">
+                    Upload
+                </MudButton>
+            </div>
+        </div>
+    </div>
 }
 
 @*Add product modal*@
-<BSModal IsCentered="true" IsScrollable="true" DataId="modal5a" @ref="modal">
-    <Header><h5 class="modal-title">Add Product</h5></Header>
-    <Content>
-        <div class="mb-3">
-            <BSLabel>Name</BSLabel>
-            <BSInput InputType="InputType.Text" @bind-Value="Details.Name" />
-        </div>
-        <div class="mb-3">
-            <BSLabel>Short Code</BSLabel>
-            <BSInput InputType="InputType.Text" @bind-Value="Details.ShortCode" />
-        </div>
 
-        <div class="mb-3">
-            <BSLabel>Size</BSLabel>
-            @foreach (var variant in Details.ProductVariants)
-            {
-                <div class="row">
-                    <div class="col">
-                        <BSInput InputType="InputType.Select" @bind-Value="variant.SizeId">
-                            <option value="0">Select</option>
-                            @foreach (var size in Sizes)
-                            {
-                                <option value="@size.Id">@size.Value</option>
-                            }
-                        </BSInput>
-                    </div>
-                    <div class="col">
-                        <BSInput InputType="InputType.Number" @bind-Value="variant.Quantity" DisplayName="Quantity" />
-                    </div>
-                    <div class="col">
-                        <BSButton Color="BSColor.Danger" OnClick="() => RemoveSizeVariant(variant)">-</BSButton>
-                    </div>
-                </div>
-            }
-            <div class="row">
-                <div class="col">
-                    <BSInput InputType="InputType.Select" @bind-Value="Variant.SizeId">
-                        <option value="0">Select</option>
-                        @foreach (var size in Sizes.Where(x => !Details.ProductVariants.Select(y => y.SizeId).Contains(x.Id)))
-                        {
-                            <option value="@size.Id">@size.Value</option>
-                        }
-                    </BSInput>
-                </div>
-                <div class="col">
-                    <BSInput InputType="InputType.Number" @bind-Value="Variant.Quantity" DisplayName="Quantity" />
-                </div>
-                <div class="col">
-                    <BSButton Color="BSColor.Success" OnClick=" AddSizeVariant">+</BSButton>
-                </div>
-            </div>
-        </div>
+<MudDialog IsVisible="addProductDialogVisibility" Options="new DialogOptions{
+CloseButton = true,
+FullScreen = true,
+}">
+    <DialogContent>
+        <MudContainer Style="max-height: 100vh; overflow-y: scroll">
+            <MudText Typo="Typo.h6" Class="mt-5">Add New Product</MudText>
+            <MudForm Model="productDetails" Validation="@(productDetailsValidator.ValidateValue)" ValidationDelay="1"
+                     @ref="productForum">
+                <div class="d-flex flex-row flex-wrap gap-3">
+                    <MudTextField @bind-Value="productDetails.Name"
+                                  For="@(() => productDetails.Name)"
+                                  Immediate="true"
+                                  Label="Product Name"
+                                  Class="flex-grow-1" />
+                    <MudTextField @bind-Value="productDetails.ShortCode"
+                                  For="@(() => productDetails.ShortCode)"
+                                  Immediate="true"
+                                  Label="Short Code"
+                                  Class="flex-grow-1" />
 
-    </Content>
-    <Footer Context="modal">
-        <BSButton MarginStart="Margins.Auto" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</BSButton>
-        <BSButton Color="BSColor.Primary" OnClick="CreateProduct">Create</BSButton>
-    </Footer>
-</BSModal>
+                    @foreach (var variant in productDetails.ProductVariants)
+                    {
+                        <div class="d-flex flex-row flex-grow-1 gap-3 w-100">
+                            <MudSelect HelperText="Size" T="int" Label="Size" Variant="MudBlazor.Variant.Text" @bind-Value="@variant.SizeId">
+                                @foreach (var size in Sizes)
+                                {
+                                    <MudSelectItem Value="@(size.Id)">@size.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+
+                            <MudTextField @bind-Value="variant.Quantity"
+                                      For="@(() => variant.Quantity)"
+                                      Immediate="true"
+                                      Label="Quantity" />
+                            <div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Remove" aria-label="remove"
+                                           Variant="MudBlazor.Variant.Filled" Color="Color.Error" OnClick="(()=> RemoveSizeVariant(variant))"></MudIconButton>
+                            </div>
+                        </div>
+
+                    }
+
+                    @if (GetSizes().Any())
+                    {
+                        <div class="d-flex flex-row flex-grow-1 gap-3 w-100">
+                            <MudSelect HelperText="Size" T="int" Label="Size" Variant="MudBlazor.Variant.Text" @bind-Value="@Variant.SizeId"
+                                   For="@(() => Variant.SizeId)">
+                                <MudSelectItem Value="0">Select</MudSelectItem>
+                                @foreach (var size in GetSizes())
+                                {
+                                    <MudSelectItem Value="@(size.Id)">@size.Value</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudTextField @bind-Value="Variant.Quantity"
+                                      For="@(() => Variant.Quantity)"
+                                      Immediate="true"
+                                      Label="Quantity"/>
+                            <div>
+                                <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add"
+                                           Variant="MudBlazor.Variant.Filled" Color="Color.Primary" OnClick="AddSizeVariant"></MudIconButton>
+                            </div>
+                        </div>
+                    }
+                    <div class="d-flex flex-row justify-space-between my-8 w-100">
+                        <div>
+                            <MudButton Color="Color.Transparent" OnClick="OnOperationFormReset">Reset</MudButton>
+                            <MudButton Color="Color.Transparent" OnClick="CloseProductForm">Close</MudButton>
+                        </div>
+                        <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="CreateProduct">Add Product</MudButton>
+                    </div>
+                </div>
+            </MudForm>
+        </MudContainer>
+    </DialogContent>
+</MudDialog>
 
 @*Operation modal*@
-<BSModal IsCentered="true" IsScrollable="false" @ref="operationModal">
-    <Header><h5 class="modal-title">Add Operation</h5></Header>
-    <Content>
-        <form @onreset="OnOperationFormReset" @onsubmit="OnOperationFormSubmit">
-            <div class="mb-3">
-                <BSLabel>Operation Name</BSLabel>
-                <BSInput InputType="InputType.Text" @bind-Value="Operation.WorkName" required
-                         Class="@OperationFormError.IsInvalid(nameof(AddOperationCommand.OperationName))" />
-                <div class="invalid-feedback">
-                    @OperationFormError.GetError(nameof(AddOperationCommand.OperationName))
+<MudDialog @ref="addOperationDialog" IsVisible="addOperationDialogVisible">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mt-5">Add New Operation</MudText>
+        <MudForm Model="operation" Validation="@(operationValidator.ValidateValue)" ValidationDelay="1"
+                 @ref="operationForm">
+            <MudTextField @bind-Value="operation.WorkName"
+                          For="@(() => operation.WorkName)"
+                          Immediate="true"
+                          Label="Operation Name" />
+            <MudTextField @bind-Value="operation.Rate"
+                          For="@(() => operation.Rate)"
+                          Immediate="true"
+                          Label="Rate"
+                          InputType="InputType.Number"
+                          Class="mt-4" />
+            <div class="d-flex flex-row justify-space-between mt-8">
+                <div>
+                    <MudButton Color="Color.Transparent" OnClick="OnOperationFormReset">Reset</MudButton>
+                    <MudButton Color="Color.Transparent" OnClick="@(()=> addOperationDialogVisible = false)">Close</MudButton>
                 </div>
+                <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="OnOperationFormSubmit">Add Operation</MudButton>
             </div>
-            <div class="mb-3">
-                <BSLabel>Rate </BSLabel>
-                <div class="input-group">
-                    <span class="input-group-text">Rs.</span>
-                    <BSInput InputType="InputType.Number" @bind-Value="Operation.Rate" required />
-                </div>
-            </div>
-            <div class="d-flex flex-row justify-content-between mt-4">
-                <BSButton Color="BSColor.Light" IsReset=true>Reset</BSButton>
-                <BSButton Color="BSColor.Success" IsSubmit=true>Add Operation</BSButton>
-            </div>
-        </form>
-    </Content>
-</BSModal>
+        </MudForm>
+    </DialogContent>
+</MudDialog>
 
-@*Edit Operation modal*@
-<BSModal IsCentered="true" IsScrollable="false" @ref="editOperationModal">
-    <Header><h5 class="modal-title">Edit Operation</h5></Header>
-    <Content>
-        <div class="mb-3">
-            <BSLabel>Operation Name</BSLabel>
-            <BSInput InputType="InputType.Text" @bind-Value="Operation.WorkName" required
-                     Class="@OperationFormError.IsInvalid(nameof(AddOperationCommand.OperationName))" />
-            <div class="invalid-feedback">
-                @OperationFormError.GetError(nameof(AddOperationCommand.OperationName))
-            </div>
-        </div>
-        <div class="mb-3">
-            <BSLabel>Rate </BSLabel>
-            <div class="input-group">
-                <span class="input-group-text">Rs.</span>
-                <BSInput InputType="InputType.Number" @bind-Value="Operation.Rate" required
-                        Class="@OperationFormError.IsInvalid(nameof(AddOperationCommand.Rate))" />
-                <div class="invalid-feedback">
-                    @OperationFormError.GetError(nameof(AddOperationCommand.Rate))
+<MudDialog @ref="editOperationDialog" IsVisible="editOperationDialogVisible">
+    <DialogContent>
+        <MudText Typo="Typo.h6" Class="mt-5">Edit Operation</MudText>
+        <MudForm Model="operation" Validation="@(operationValidator.ValidateValue)" ValidationDelay="1"
+                 @ref="operationForm">
+            <MudTextField @bind-Value="operation.WorkName"
+                          For="@(() => operation.WorkName)"
+                          Immediate="true"
+                          Label="Operation Name" />
+            <MudTextField @bind-Value="operation.Rate"
+                          For="@(() => operation.Rate)"
+                          Immediate="true"
+                          Label="Rate"
+                          InputType="InputType.Number"
+                          Class="mt-4" />
+            <div class="d-flex flex-row justify-space-between mt-8">
+                <div>
+                    <MudButton Color="Color.Transparent" OnClick="OnOperationFormReset">Reset</MudButton>
+                    <MudButton Color="Color.Transparent" OnClick="@(()=> editOperationDialogVisible = false)">Close</MudButton>
                 </div>
+                <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="OnOperationFormSubmit">Add Operation</MudButton>
             </div>
-        </div>
-    </Content>
-    <Footer>
-        <div class="d-flex flex-row justify-content-between w-100">
-            <BSButton Color="BSColor.Light" IsReset=true OnClick="OnOperationFormReset">Reset</BSButton>
-            <BSButton Color="BSColor.Success" IsSubmit=true OnClick="OnOperationFormSubmit">Save</BSButton>
-        </div>
-    </Footer>
-</BSModal>
-
+        </MudForm>
+    </DialogContent>
+</MudDialog>
 @code {
 
     [Parameter]
     public int ProductId { get; set; }
-    private string Title { get; set; }
-    private ProductDetailDto Details { get; set; }
-    private ProductInstanceDto Variant { get; set; } = new();
-    private WorkDto Operation { get; set; } = new();
-    private WorkDto OperationReset { get; set; } = new();
-    private FormError OperationFormError { get; set; }
-    private List<SizeDto> Sizes { get; set; } = new();
-    private string ProductImage { get; set; } = DirectoryConstant.DFAULT_PRODUCT_IMAGE_PLACEHOLDER;
-    private BSModal modal;
-    private BSModal operationModal;
-    private BSModal editOperationModal;
+    string Title { get; set; }
+    ProductDetailDto productDetails;
+    ProductDetailDtoValidator productDetailsValidator = new();
+    ProductInstanceDto Variant { get; set; } = new();
+    MudForm productForum;
+    List<SizeDto> Sizes { get; set; } = new();
+    string SearchString;
+    string ProductImage { get; set; } = DirectoryConstant.DFAULT_PRODUCT_IMAGE_PLACEHOLDER;
+    bool addProductDialogVisibility = false;
+
+    MudDialog addOperationDialog;
+    MudForm operationForm;
+    MudDialog editOperationDialog;
+    WorkDtoValidator operationValidator = new();
+    WorkDto operation { get; set; } = new();
+    WorkDto OperationReset { get; set; } = new();
+    bool addOperationDialogVisible = false;
+    bool editOperationDialogVisible = false;
 
     protected override void OnInitialized()
     {
-        Details = new()
+        productDetails = new()
             {
-                ProductVariants = new()
+                ProductVariants = new(),
+                Works = new()
             };
         Task.Run(async () =>
         {
@@ -202,7 +236,8 @@
         {
             if (ProductId == 0)
             {
-                await modal.ShowAsync();
+                addProductDialogVisibility = true;
+                StateHasChanged();
             }
             else
             {
@@ -212,7 +247,7 @@
                     })
                     .OnSuccess(async (data) =>
                     {
-                        Details = data;
+                        productDetails = data;
                         await AppMediator.Send(new ResourceQuery()
                             {
                                 ResourceId = data.ImageId ?? 0
@@ -225,19 +260,24 @@
                     })
                     .OnError((error) =>
                     {
-                        BlazorStrap.Toaster.Error("Error", error.Message);
+                        ToastService.Error(error.Message);
                     });
             }
         }
     }
 
-    private void AddSizeVariant()
+    List<SizeDto> GetSizes()
+    {
+        return Sizes.Where(x => !productDetails.ProductVariants.Select(y => y.SizeId).Contains(x.Id)).ToList();
+    }
+
+    void AddSizeVariant()
     {
         if (Variant.SizeId == 0 || Variant.Quantity <= 0)
         {
             return;
         }
-        Details.ProductVariants.Add(Variant.Clone());
+        productDetails.ProductVariants.Add(Variant.Clone());
 
         Variant.Quantity = 0;
         Variant.SizeId = 0;
@@ -245,162 +285,182 @@
         StateHasChanged();
     }
 
-    private void RemoveSizeVariant(ProductInstanceDto variant)
+    void RemoveSizeVariant(ProductInstanceDto variant)
     {
-        Details.ProductVariants.Remove(variant);
+        productDetails.ProductVariants.Remove(variant);
         StateHasChanged();
     }
 
-    private async Task CreateProduct()
+    async Task CreateProduct()
     {
+        await productForum.Validate();
+        if (!productForum.IsValid)
+        {
+            return;
+        }
         await AppMediator.Send(new AddProductCommand()
             {
-                Id = Details.Id,
-                ImageId = Details.ImageId,
-                Name = Details.Name,
-                ShortCode = Details.ShortCode,
-                ProductVariants = Details.ProductVariants
+                Id = productDetails.Id,
+                ImageId = productDetails.ImageId,
+                Name = productDetails.Name,
+                ShortCode = productDetails.ShortCode,
+                ProductVariants = productDetails.ProductVariants
             })
             .OnSuccess(async (data) =>
             {
-                await modal.HideAsync();
                 ProductId = data;
-                Details = (await AppMediator.Send(new GetProductDetailByIdQuery()
+                productDetails = (await AppMediator.Send(new GetProductDetailByIdQuery()
                     {
                         Id = ProductId
                     })).Data;
 
-                BlazorStrap.Toaster.Success("Success", "Product added successfully");
+                ToastService.Success("Product added successfully");
+                addProductDialogVisibility = false;
                 await InvokeAsync(() => StateHasChanged());
             })
             .OnError((err) =>
             {
-                BlazorStrap.Toaster.Error(err.Type.ToString(), err.Message);
+                ToastService.Error(err.Message);
+            })
+            .OnFormError(err =>
+            {
+                ToastService.Error(err.First().Value.First());
             });
 
     }
 
-    private async Task OnOperationFormSubmit()
+    void CloseProductForm()
     {
-        Operation.ProductId = Details.Id;
-        if (Operation.Id > 0)
+        addProductDialogVisibility = false;
+        NavigationManager.NavigateTo("manage-products");
+    }
+
+    async Task OnOperationFormSubmit()
+    {
+        await operationForm.Validate();
+        if (!operationForm.IsValid)
+        {
+            return;
+        }
+
+        operation.ProductId = productDetails.Id;
+        if (operation.Id > 0)
         {
             await AppMediator.Send(new EditOperationCommand()
                 {
-                    OperationName = Operation.WorkName,
-                    WordId = Operation.Id,
-                    Rate = Operation.Rate
+                    OperationName = operation.WorkName,
+                    WordId = operation.Id,
+                    Rate = operation.Rate
                 })
                 .OnSuccess(async data =>
                 {
-                    await editOperationModal.HideAsync();
-                    BlazorStrap.Toaster.Success(content: "Operation updated successfully");
+                    editOperationDialogVisible = false;
+                    ToastService.Success("Operation updated successfully");
+                    await InvokeAsync(StateHasChanged);
                     await AppMediator.Send(new GetProductDetailByIdQuery()
                         {
                             Id = ProductId
                         })
                     .OnSuccess(async data =>
                     {
-                        Operation = OperationReset = new();
-                        Details = data;
+                        operation = new();
+                        OperationReset = new();
+                        productDetails = data;
                         await InvokeAsync(StateHasChanged);
                     });
                 })
                 .OnError(err =>
                 {
-                    BlazorStrap.Toaster.Error("Failed", err.Message);
-                })
-                .OnFormError(async err =>
-                {
-                    OperationFormError = err;
-                    await InvokeAsync(StateHasChanged);
+                    ToastService.Error(err.Message);
                 });
         }
         else
         {
             await AppMediator.Send(new AddOperationCommand()
                 {
-                    OperationName = Operation.WorkName,
-                    ProductId = Operation.ProductId,
-                    Rate = Operation.Rate
+                    OperationName = operation.WorkName,
+                    ProductId = operation.ProductId,
+                    Rate = operation.Rate
                 })
                 .OnSuccess(async data =>
                 {
-                    Operation.Id = data;
-                    await operationModal.HideAsync();
+                    operation.Id = data;
+                    addOperationDialogVisible = false;
+                    await InvokeAsync(StateHasChanged);
+                    ToastService.Success("Operation added successfully");
                     await AppMediator.Send(new GetProductDetailByIdQuery()
                         {
                             Id = ProductId
                         })
                     .OnSuccess(async data =>
                     {
-                        Operation = new();
-                        OperationFormError = null;
-                        Details = data;
+                        operation = new();
+                        productDetails = data;
                         await InvokeAsync(StateHasChanged);
                     });
                 })
                 .OnError(err =>
                 {
-                    BlazorStrap.Toaster.Error("Failed", err.Message);
+                    ToastService.Error(err.Message);
                 })
                 .OnFormError(async err =>
                 {
-                    OperationFormError = err;
-                    BlazorStrap.Toaster.Success("Success", "Operation added successfully");
+                    ToastService.Success("Operation added successfully");
                     await InvokeAsync(StateHasChanged);
                 });
         }
     }
 
-    private void OnOperationFormReset()
+    void OnOperationFormReset()
     {
-        Operation = OperationReset.Clone();
+        operation = OperationReset.Clone();
         StateHasChanged();
     }
 
-    private async Task OnFileChange(InputFileChangeEventArgs e)
+    async Task OnFileChange(InputFileChangeEventArgs e)
     {
         await AppMediator.Send(new ResourceCommand
             {
-                Id = Details.ImageId ?? 0,
+                Id = productDetails.ImageId ?? 0,
                 DataStream = e.File.OpenReadStream(maxAllowedSize: Constant.FILE_PICKER_MAX_LENGTH)
             })
             .OnSuccess(async data =>
             {
-                Details.ImageId = data.Id;
+                productDetails.ImageId = data.Id;
                 await AppMediator.Send(new SaveProductImageCommand()
                     {
                         ImageId = data.Id,
-                        ProductId = Details.Id
+                        ProductId = productDetails.Id
                     })
                     .OnSuccess(async x =>
                     {
-                        BlazorStrap.Toaster.Success("Success", "Image uploaded successfully");
+                        ToastService.Success("Image uploaded successfully");
                         ProductImage = data.Base64String.ToProductImgSource();
                         await InvokeAsync(StateHasChanged);
                     })
                     .OnError(err =>
                     {
-                        BlazorStrap.Toaster.Error("Failed to save image", err.Message);
+                        ToastService.Error(err.Message);
                     });
             })
             .OnError(err =>
             {
-                BlazorStrap.Toaster.Error("Failed to save image", err.Message);
+                ToastService.Error(err.Message);
             })
             .OnFormError(err =>
             {
-
+                foreach (var er in err)
+                {
+                    ToastService.Error(er.Value[0]);
+                }
             });
     }
 
-    private async Task OnOperationSelect(WorkDto selectedItem)
+    void OnOperationSelect(WorkDto selectedItem)
     {
-        OperationFormError = null;
-        Operation = selectedItem.Clone();
+        operation = selectedItem.Clone();
         OperationReset = selectedItem.Clone();
+        editOperationDialogVisible = true;
         StateHasChanged();
-        await editOperationModal.ShowAsync();
     }
 }

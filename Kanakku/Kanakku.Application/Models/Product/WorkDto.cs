@@ -1,4 +1,8 @@
-﻿namespace Kanakku.Application.Models.Product
+﻿using FluentValidation;
+using Kanakku.Shared;
+using Kanakku.Shared.Utilities;
+
+namespace Kanakku.Application.Models.Product
 {
     public class WorkDto
     {
@@ -6,5 +10,20 @@
         public string WorkName { get; set; }
         public float Rate { get; set; }
         public int ProductId { get; set; }
+    }
+
+    public class WorkDtoValidator : AppAbstractValidator<WorkDto>
+    {
+        public WorkDtoValidator()
+        {
+            RuleFor(x => x.WorkName)
+                .NotEmpty()
+                .Matches(AppRegex.NAME)
+                .MaximumLength(50);
+
+            RuleFor(x => x.Rate)
+                .NotEmpty()
+                .GreaterThan(0);
+        }
     }
 }

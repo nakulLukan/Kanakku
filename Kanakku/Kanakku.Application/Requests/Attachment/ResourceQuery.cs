@@ -40,7 +40,10 @@ public class ResourceQueryHandler : IRequestHandler<ResourceQuery, BinaryResourc
         {
             Id = request.ResourceId,
             LocalPath = path,
-            Base64String = Convert.ToBase64String(resource.Data)
+            Base64String = Convert.ToBase64String(resource.Data),
+            FileName = resource.FileName,
+            FileFullName = resource.FileFullName,
+            Extension = resource.Extension 
         };
     }
 }

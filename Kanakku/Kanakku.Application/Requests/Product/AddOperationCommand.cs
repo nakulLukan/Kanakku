@@ -57,7 +57,7 @@ public class AddOperationCommandHandler : IRequestHandler<AddOperationCommand, i
     }
 }
 
-public class AddOperationCommandValidator : AbstractValidator<AddOperationCommand>
+public class AddOperationCommandValidator : AppAbstractValidator<AddOperationCommand>
 {
     public AddOperationCommandValidator()
     {

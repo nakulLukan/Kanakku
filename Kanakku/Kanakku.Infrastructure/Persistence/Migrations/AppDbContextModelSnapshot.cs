@@ -45,6 +45,21 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("bytea")
                         .HasColumnName("data");
 
+                    b.Property<string>("Extension")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("extension");
+
+                    b.Property<string>("FileFullName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_full_name");
+
+                    b.Property<string>("FileName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("file_name");
+
                     b.Property<string>("ModifiedBy")
                         .IsRequired()
                         .HasColumnType("text")
@@ -751,6 +766,12 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("address_line_one");
 
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("code");
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasColumnType("text")
@@ -760,9 +781,18 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_on");
 
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_of_birth");
+
                     b.Property<int>("DistrictId")
                         .HasColumnType("integer")
                         .HasColumnName("district_id");
+
+                    b.Property<int?>("DpImageId")
+                        .IsRequired()
+                        .HasColumnType("integer")
+                        .HasColumnName("dp_image_id");
 
                     b.Property<string>("Email")
                         .IsRequired()
@@ -770,9 +800,19 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
-                    b.Property<int?>("ImageId")
+                    b.Property<string>("EpfRegNo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("epf_reg_no");
+
+                    b.Property<string>("EsiRegNo")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("esi_reg_no");
+
+                    b.Property<int>("IdProofImageId")
                         .HasColumnType("integer")
-                        .HasColumnName("image_id");
+                        .HasColumnName("id_proof_image_id");
 
                     b.Property<string>("ModifiedBy")
                         .IsRequired()
@@ -789,10 +829,14 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("name");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("PhoneNumber1")
                         .IsRequired()
                         .HasColumnType("text")
-                        .HasColumnName("phone_number");
+                        .HasColumnName("phone_number1");
+
+                    b.Property<string>("PhoneNumber2")
+                        .HasColumnType("text")
+                        .HasColumnName("phone_number2");
 
                     b.Property<string>("Pincode")
                         .IsRequired()
@@ -810,8 +854,11 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.HasIndex("DistrictId")
                         .HasDatabaseName("ix_employees_district_id");
 
-                    b.HasIndex("ImageId")
-                        .HasDatabaseName("ix_employees_image_id");
+                    b.HasIndex("DpImageId")
+                        .HasDatabaseName("ix_employees_dp_image_id");
+
+                    b.HasIndex("IdProofImageId")
+                        .HasDatabaseName("ix_employees_id_proof_image_id");
 
                     b.HasIndex("StateId")
                         .HasDatabaseName("ix_employees_state_id");
@@ -960,12 +1007,19 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_employees_lookup_details_district_id");
 
-                    b.HasOne("Kanakku.Domain.Attachment.BinaryResource", "Image")
+                    b.HasOne("Kanakku.Domain.Attachment.BinaryResource", "DisplayPicture")
                         .WithMany()
-                        .HasForeignKey("ImageId")
+                        .HasForeignKey("DpImageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_employees_binary_resources_image_id");
+                        .HasConstraintName("fk_employees_binary_resources_display_picture_id");
+
+                    b.HasOne("Kanakku.Domain.Attachment.BinaryResource", "IdProof")
+                        .WithMany()
+                        .HasForeignKey("IdProofImageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_employees_binary_resources_id_proof_id");
 
                     b.HasOne("Kanakku.Domain.Lookup.LookupDetail", "State")
                         .WithMany()
@@ -974,9 +1028,11 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_employees_lookup_details_state_id");
 
+                    b.Navigation("DisplayPicture");
+
                     b.Navigation("District");
 
-                    b.Navigation("Image");
+                    b.Navigation("IdProof");
 
                     b.Navigation("State");
                 });

@@ -30,8 +30,15 @@ public class GetAllEmployeesQueryHandler : IRequestHandler<GetAllEmployeesQuery,
             State = x.State.Value,
             StateId = x.StateId,
             Pincode = x.Pincode,
-            PhoneNumber = x.PhoneNumber,
-            AddressLineOne = x.AddressLineOne
+            PhoneNumber1 = x.PhoneNumber1,
+            AddressLineOne = x.AddressLineOne,
+            DateOfBirth = x.DateOfBirth,
+            DpImageId = x.DpImageId,
+            EmpCode = x.Code,
+            EpfRegNo = x.EpfRegNo,
+            EsiRegNo = x.EsiRegNo,
+            IdProofImageId = x.IdProofImageId,
+            PhoneNumber2 = x.PhoneNumber2,
         }).ToListAsync(cancellationToken);
     }
 }

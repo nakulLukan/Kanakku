@@ -12,7 +12,7 @@
         <EnableDefaultCssItems>false</EnableDefaultCssItems>
 
         <!-- Display name -->
-        <ApplicationTitle>Kanakku.UI</ApplicationTitle>
+        <ApplicationTitle>Kanakku</ApplicationTitle>
 
         <!-- App Identifier -->
         <ApplicationId>com.lukeentertainments.kanakku.ui</ApplicationId>
@@ -27,22 +27,22 @@
         <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
         <TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
         <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-        <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
-        <PackageCertificateThumbprint>395FF1628F249E8C30AE50A14C98E686A7C9770C</PackageCertificateThumbprint>
+        <AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+        <PackageCertificateThumbprint>9D685B1D21C004E2575CF024ED9B755E048E3DFE</PackageCertificateThumbprint>
         <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
         <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
         <AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
-        <GenerateTestArtifacts>True</GenerateTestArtifacts>
+        <GenerateTestArtifacts>False</GenerateTestArtifacts>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-        <GenerateRuntimeConfigurationFiles>False</GenerateRuntimeConfigurationFiles>
+        <GenerateRuntimeConfigurationFiles>True</GenerateRuntimeConfigurationFiles>
         <AssemblyName></AssemblyName>
-
+      <EnableDefaultContentItems>True</EnableDefaultContentItems>
       <!--<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>-->
     </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework.Contains('-windows')) and '$(Configuration)' == 'Release'">
-    <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+    <GenerateAppxPackageOnBuild>false</GenerateAppxPackageOnBuild>
     <AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
-    <PackageCertificateThumbprint>998FA40270F41110F7F598FBC25E79B9EDE8B915</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>395FF1628F249E8C30AE50A14C98E686A7C9770C</PackageCertificateThumbprint>
   </PropertyGroup>
     <PropertyGroup>
       <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.22621.0</TargetFrameworks>
@@ -51,6 +51,7 @@
     <PropertyGroup>
       <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.22621.0</TargetFrameworks>
       <TargetFrameworks />
+      <Title>Kannaku</Title>
     </PropertyGroup>
 
     <ItemGroup>
@@ -72,14 +73,16 @@
     </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="11.0.1" />
     <PackageReference Include="FluentValidation" Version="11.2.0" />
-    <PackageReference Include="BlazorStrap" Version="5.0.106" />
-    <PackageReference Include="BlazorTable" Version="1.17.0" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.2.0" />
     <PackageReference Include="MediatR" Version="10.0.1" />
     <PackageReference Include="MediatR.Extensions.Microsoft.DependencyInjection" Version="10.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.8">
     </PackageReference>
+    <PackageReference Include="MudBlazor" Version="6.0.14" />
+    <PackageReference Include="Serilog" Version="2.11.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

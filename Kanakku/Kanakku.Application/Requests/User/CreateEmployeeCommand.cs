@@ -1,6 +1,7 @@
 ﻿using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.User;
 using Kanakku.Domain.User;
+using Kanakku.Shared.Utilities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,27 +22,40 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
 
     public async Task<Guid> Handle(CreateEmployeeCommand request, CancellationToken cancellationToken)
     {
-        var employees = await _dbContext.Employees.Where(x => x.Email == request.Email || x.PhoneNumber == x.PhoneNumber)
+        var employees = await _dbContext.Employees.Where(x => x.Email == request.Email
+            || x.PhoneNumber1 == request.PhoneNumber1
+            || x.PhoneNumber1 == request.PhoneNumber2
+            || x.PhoneNumber2 == request.PhoneNumber1
+            || x.PhoneNumber2 == request.PhoneNumber2)
             .Select(x => new
             {
                 x.Id,
                 x.Email,
-                x.PhoneNumber
+                x.PhoneNumber1,
+                x.PhoneNumber2,
+                x.Code
             }).ToListAsync(cancellationToken);
 
+        if(employees.Any(x=>x.Code.ToLower() == request.EmpCode.ToLower()))
+        {
+            throw new AppException("Employee code cannot be duplicate");
+        }
         if (employees.Any(x => x.Email == request.Email))
         {
-            throw new Exception("User with same email already exists.");
+            throw new AppException("User with same email already regeistered.");
         }
 
-        if (employees.Any(x => x.PhoneNumber == request.PhoneNumber))
+        if (employees.Any(x => x.PhoneNumber1 == request.PhoneNumber1
+            || x.PhoneNumber1 == request.PhoneNumber2
+            || x.PhoneNumber2 == request.PhoneNumber1
+            || x.PhoneNumber2 == request.PhoneNumber2))
         {
-            throw new Exception("User with same phone number already exists");
+            throw new AppException("User with same phone number already registered.");
         }
 
         Employee emp = new Employee
         {
-            PhoneNumber = request.PhoneNumber,
+            PhoneNumber1 = request.PhoneNumber1,
             Email = request.Email,
             DistrictId = request.DistrictId,
             StateId = request.StateId,
@@ -52,17 +66,17 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
             ModifiedOn = DateTime.UtcNow,
             CreatedBy = String.Empty,
             ModifiedBy = String.Empty,
+            Code = request.EmpCode,
+            PhoneNumber2 = request.PhoneNumber2,
+            DateOfBirth = request.DateOfBirth.Value.ToUniversalTime(),
+            EpfRegNo = request.EpfRegNo,
+            EsiRegNo = request.EsiRegNo,
+            DpImageId = request.DpImageId,
+            IdProofImageId = request.IdProofImageId.Value,
         };
+        _dbContext.Employees.Add(emp);
+        await _dbContext.SaveAsync(cancellationToken);
 
-        try
-        {
-            _dbContext.Employees.Add(emp);
-            await _dbContext.SaveAsync(cancellationToken);
-        }
-        catch(Exception ex)
-        {
-
-        }
         return emp.Id;
     }
 }

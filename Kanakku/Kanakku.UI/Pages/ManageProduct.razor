@@ -1,33 +1,38 @@
 ﻿@page "/manage-products"
 @using Kanakku.Application.Models.Product
 @using Kanakku.Application.Requests.Product
-@using BlazorTable
 @using Kanakku.UI.Contracts.Event
 @inject IAppMediator AppMediator
 @inject NavigationManager NavigationManager
 
-<h3>Manage Products</h3>
-<div>
-    <BSButton Color="BSColor.Primary" Target="modal5a" OnClick="() => SelectProduct(null)">Create new product</BSButton>
-</div>
-
-<div class="mt-1">
-    <Table TableItem="ProductListDto" Items="Products" PageSize="15" SelectionType="SelectionType.Single" RowClickAction="SelectProduct">
-        <Column TableItem="ProductListDto" Title="Name" Field="@(x => x.Name)" Sortable="true" Filterable="true" Width="20%" />
-        <Column TableItem="ProductListDto" Title="Short Code" Field="@(x => x.ShortCode)" Sortable="true" Filterable="true" Width="20%">
-        </Column>
-        <Column TableItem="ProductListDto" Title="Total Quantity" Field="@(x => x.TotalQuantity)" Sortable="true" Filterable="true" Width="20%" />
-        <Pager ShowPageNumber="true" ShowTotalCount="true" />
-    </Table>
-</div>
+<MudTable Items="@Products" FixedHeader=true Hover="true" Breakpoint="Breakpoint.Sm"
+          LoadingProgressColor="Color.Info" Striped=true Bordered=true Elevation="1"
+          OnRowClick="@(x => SelectProduct(x.Item))" T="ProductListDto"
+          Height="@UIComp.TABLE_HEIGHT_DEFAULT">
+    <ToolBarContent>
+        <div class="d-flex flex-row w-100 justify-space-between">
+            <MudText Typo="Typo.h6">Products</MudText>
+            <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> SelectProduct(null))">Add Product</MudButton>
+        </div>
+    </ToolBarContent>
+    <HeaderContent>
+        <MudTh>Name</MudTh>
+        <MudTh>Short Code</MudTh>
+        <MudTh>Quantity</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Name">@context.Name</MudTd>
+        <MudTd DataLabel="Short Code">@context.ShortCode</MudTd>
+        <MudTd DataLabel="Quantity">@context.TotalQuantity</MudTd>
+    </RowTemplate>
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
 
 @code {
-    private List<ProductListDto> Products { get; set; }
-
-    protected override void OnInitialized()
-    {
-        Products = new();
-    }
+    private List<ProductListDto> Products { get; set; } = new List<ProductListDto>();
+    public string searchString;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -42,12 +47,12 @@
         }
     }
 
-    private void SelectProduct(ProductListDto product)
+    private void SelectProduct(ProductListDto selectedProduct)
     {
         int productId = 0;
-        if (product != null)
+        if (selectedProduct != null)
         {
-            productId = product.Id;
+            productId = selectedProduct.Id;
         }
         NavigationManager.NavigateTo($"manage-products/{productId}");
     }

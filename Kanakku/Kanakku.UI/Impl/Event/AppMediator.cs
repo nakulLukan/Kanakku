@@ -3,6 +3,7 @@ using Kanakku.Shared.Models;
 using Kanakku.Shared.Utilities;
 using Kanakku.UI.Contracts.Event;
 using MediatR;
+using Serilog;
 
 namespace Kanakku.UI.Impl.Event;
 
@@ -43,14 +44,17 @@ public class AppMediator : IAppMediator
         }
         catch (ValidationException ex)
         {
+            Log.Logger.Error("Validation exception, Message: {message}\nStack: {stack}", ex.Message, ex.StackTrace);
             return new ResponseDto<TResponse>(new FormError(ex.Errors));
         }
         catch (AppException ex)
         {
+            Log.Logger.Error("Validation exception, Message: {message}\nStack: {stack}", ex.Message, ex.StackTrace);
             return new ResponseDto<TResponse>(new ErrorDto(ex.ErrorMessage));
         }
         catch (Exception ex)
         {
+            Log.Logger.Error("Validation exception, Message: {message}\nStack: {stack}", ex.Message, ex.StackTrace);
             return new ResponseDto<TResponse>(new ErrorDto("Oops, something went wrong."));
         }
     }
