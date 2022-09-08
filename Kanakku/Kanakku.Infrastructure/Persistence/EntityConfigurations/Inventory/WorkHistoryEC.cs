@@ -20,6 +20,9 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.Inventory
             builder.HasOne(x => x.Employee)
                 .WithMany(x => x.WorkHistories)
                 .HasForeignKey(x => x.EmployeeId);
+            builder.HasOne(x=>x.Variant)
+                .WithMany()
+                .HasForeignKey(x => x.VariantId);
         }
     }
 }

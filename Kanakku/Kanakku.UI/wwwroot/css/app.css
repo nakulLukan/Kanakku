@@ -101,6 +101,10 @@ body{
     height: 100vh;
 }
 
+.product-variant-quantity-border {
+    border-color: #bdbdbd !important;
+}
+
 @supports (-webkit-touch-callout: none) {
     .status-bar-safe-area {
         display: flex;

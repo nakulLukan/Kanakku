@@ -1,0 +1,117 @@
+﻿@using AutoMapper
+@using Kanakku.Application.Contracts.Presentation
+@using Kanakku.Application.Models.DailyOperation
+@using Kanakku.Application.Requests.DailyOperation
+@using Kanakku.Application.Requests.Product
+@using Kanakku.Application.Requests.User
+@using Kanakku.UI.Contracts.Event
+@using MediatR
+@inject IMediator Mediator
+@inject IAppMediator AppMediator
+@inject IMapper Mapper;
+@inject IToastService ToastService;
+
+<div class="d-flex gap-3">
+    <div class="w-50">
+        <MudForm Model="dailyOperation" ValidationDelay="1"
+                 @ref="addOperationForm">
+            <div class="d-flex flex-row flex-wrap gap-3">
+                <MudDatePicker @bind-Date="@dailyOperation.WorkedOn"> </MudDatePicker>
+                <MudTimePicker @bind-Time="@dailyOperation.WorkedTime"> </MudTimePicker>
+                <SearchableSelect T="int?" @bind-SelectedItem="dailyOperation.ProductId" Label="Product"
+                                  Values="Products.Select(x=> ((int?)x.ProductId, x.ProductName)).ToList()"
+                                  ValueChanged="OnProductSelect" />
+                <SearchableSelect T="int?" @bind-SelectedItem="dailyOperation.OperationId" Label="Operation"
+                                  Values="Operations.Select(x=> ((int?)x.OperationId, x.OperationName)).ToList()" />
+                <SearchableSelect T="Guid?" @bind-SelectedItem="dailyOperation.WorkedBy" Label="Employee"
+                                  Values="Employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()" />
+                <div class="d-flex flex-wrap  flex-grow-1 gap-2 justify-space-between">
+                    @foreach (var variant in dailyOperation.VariantsPerOperation)
+                    {
+                        <MudPaper Class="border border-1 p-2 product-variant-quantity-border flex-grow-1" Elevation="0">
+                            <MudText Class="n2" Typo="Typo.caption">Size</MudText>
+                            <div class="d-flex justify-space-between">
+                                <MudCheckBox @bind-Checked="variant.IsChecked" Class="m-0 p-0"
+                                         T="bool" Label="@Variants.First(x=>x.VariantId == variant.OperationInstanceId).SizeName"></MudCheckBox>
+                                <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity" HideSpinButtons="true" Min="0"
+                                             @bind-Value="@variant.Quantity" Variant="Variant.Outlined" Style="max-width: 80px;"></MudNumericField>
+                            </div>
+                        </MudPaper>
+                    }
+                </div>
+
+                <div class="d-flex flex-row justify-space-between my-8 w-100">
+                    <div>
+                        <MudButton Color="Color.Transparent" OnClick="ResetDetails">Reset</MudButton>
+                    </div>
+                    <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="SubmitDetails">Submit</MudButton>
+                </div>
+            </div>
+        </MudForm>
+    </div>
+    <div class="w-50">
+    </div>
+</div>
+@code {
+    MudForm addOperationForm;
+    DailyOperationDto dailyOperation { get; set; } = new();
+
+    ProductMappingDto[] Products = new ProductMappingDto[0];
+    OperationMappingDto[] Operations = new OperationMappingDto[0];
+    VariantMappingDto[] Variants = new VariantMappingDto[0];
+    EmployeeMappingDto[] Employees = new EmployeeMappingDto[0];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var productsTask = Mediator.Send(new ProductMappingQuery());
+            var employeesTask = Mediator.Send(new EmployeeMappingQuery());
+            await Task.WhenAll(productsTask, employeesTask);
+            Products = productsTask.Result;
+            Employees = employeesTask.Result;
+            StateHasChanged();
+        }
+    }
+
+    void OnProductSelect(int? selectedProduct)
+    {
+        var prod = Products.FirstOrDefault(x => x.ProductId == dailyOperation.ProductId);
+        Operations = prod?.Operations
+            ?? new OperationMappingDto[0];
+        Variants = prod?.Variants
+            ?? new VariantMappingDto[0];
+        dailyOperation.VariantsPerOperation = prod.Variants.Select(x => new OperaitonVariantDto
+            {
+                OperationInstanceId = x.VariantId,
+                Quantity = 0,
+                IsChecked = false
+            }).ToList();
+        StateHasChanged();
+    }
+
+    void ResetDetails()
+    {
+        dailyOperation = new();
+        dailyOperation.VariantsPerOperation = Products.FirstOrDefault(x => x.ProductId == dailyOperation.ProductId)
+            ?.Variants?.Select(x => new OperaitonVariantDto
+                {
+                    OperationInstanceId = x.VariantId,
+                    Quantity = 0,
+                    IsChecked = false
+                })?.ToList() ?? new();
+    }
+
+    async Task SubmitDetails()
+    {
+        await AppMediator.Send(Mapper.Map(dailyOperation, new SubmitDailyOperationCommand()))
+            .OnSuccess(data =>
+            {
+                ToastService.Success("Daily operation added successfully.");
+            })
+            .OnError(err =>
+            {
+                ToastService.Error(err.Message);
+            });
+    }
+}

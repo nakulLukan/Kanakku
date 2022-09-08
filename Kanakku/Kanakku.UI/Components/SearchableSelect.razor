@@ -1,0 +1,59 @@
+﻿@typeparam T
+<MudAutocomplete T="(T, string)" Label="@Label"
+                 SearchFunc="TextChanged" ToStringFunc="(x=> x.Item2)"
+                 ValueChanged="((x)=>{ SelectedItem = x.Item1; ValueChanged.InvokeAsync(x.Item1);})"
+                 Variant="Variant.Outlined"
+                 @ref="@mudAuto">
+</MudAutocomplete>
+
+@code {
+
+    MudAutocomplete<(T, string)> mudAuto;
+
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public List<(T, string)> Values { get; set; }
+
+    [Parameter]
+    public EventCallback<T> ValueChanged { get; set; }
+
+    T _selectedItem { get; set; }
+    [Parameter]
+    public T SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            if (_selectedItem.Equals(value))
+            {
+
+                return;
+            };
+            if (value is null)
+            {
+                mudAuto.Value = default;
+                mudAuto.Clear();
+            }
+            _selectedItem = value;
+
+            SelectedItemChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<T> SelectedItemChanged { get; set; }
+
+    Task<IEnumerable<(T, string)>> TextChanged(string searchPattern)
+    {
+        if (string.IsNullOrEmpty(searchPattern))
+        {
+            return Task.FromResult(Values.AsEnumerable());
+        }
+        var subset = Values.Where(x => x.Item2.ToLower().Contains(searchPattern.ToLower().Trim())).ToArray();
+
+        return Task.FromResult(subset.AsEnumerable());
+    }
+
+
+}

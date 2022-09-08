@@ -3,6 +3,7 @@ using System;
 using Kanakku.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kanakku.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20220905151305_BinaryResourcePropAdded")]
+    partial class BinaryResourcePropAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -369,14 +371,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("modified_on");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("integer")
-                        .HasColumnName("quantity");
-
-                    b.Property<int>("VariantId")
-                        .HasColumnType("integer")
-                        .HasColumnName("variant_id");
-
                     b.Property<int>("WorkDuration")
                         .HasColumnType("integer")
                         .HasColumnName("work_duration");
@@ -394,9 +388,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EmployeeId")
                         .HasDatabaseName("ix_work_histories_employee_id");
-
-                    b.HasIndex("VariantId")
-                        .HasDatabaseName("ix_work_histories_variant_id");
 
                     b.HasIndex("WorkId")
                         .HasDatabaseName("ix_work_histories_work_id");
@@ -952,13 +943,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_work_histories_employees_employee_id");
 
-                    b.HasOne("Kanakku.Domain.Inventory.ProductInstance", "Variant")
-                        .WithMany()
-                        .HasForeignKey("VariantId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_work_histories_product_instances_variant_id");
-
                     b.HasOne("Kanakku.Domain.Inventory.Work", "Work")
                         .WithMany("WorkHistories")
                         .HasForeignKey("WorkId")
@@ -967,8 +951,6 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasConstraintName("fk_work_histories_works_work_id");
 
                     b.Navigation("Employee");
-
-                    b.Navigation("Variant");
 
                     b.Navigation("Work");
                 });

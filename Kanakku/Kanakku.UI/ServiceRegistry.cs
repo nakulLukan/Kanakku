@@ -3,7 +3,9 @@ using FluentValidation;
 using Kanakku.Application.Contracts.Essential;
 using Kanakku.Application.Contracts.Presentation;
 using Kanakku.Application.Contracts.Storage;
+using Kanakku.Application.Models.DailyOperation;
 using Kanakku.Application.Models.User;
+using Kanakku.Application.Requests.DailyOperation;
 using Kanakku.Application.Requests.User;
 using Kanakku.UI.Contracts.Event;
 using Kanakku.UI.Impl.Essential;
@@ -31,6 +33,7 @@ public static class ServiceRegistry
         {
             cfg.CreateMap<EmployeeDto, CreateEmployeeCommand>();
             cfg.CreateMap<EmployeeDto, EditEmployeeCommand>();
+            cfg.CreateMap<DailyOperationDto, SubmitDailyOperationCommand>();
         });
 
         serviceCollection.AddSingleton(configuration.CreateMapper());
