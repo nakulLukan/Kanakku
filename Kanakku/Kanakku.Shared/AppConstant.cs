@@ -4,6 +4,7 @@ public static class SecureStorageKey
 {
     public const string IS_LOGGED = "is_logged";
     public const string USER_ID = "user_id";
+    public const string USER_DAILY_OPERATION_FILTER = "daily-operations-{0}-key";
 }
 
 public static class LookupMasterInternalName
@@ -36,4 +37,6 @@ public static class AppRegex
 public static class UIComp
 {
     public const string TABLE_HEIGHT_DEFAULT = "60vh";
+    public const string TABLE_HEIGHT_OPERATIONS = "60vh";
+    public const string DateTimeFormat = "f";
 }

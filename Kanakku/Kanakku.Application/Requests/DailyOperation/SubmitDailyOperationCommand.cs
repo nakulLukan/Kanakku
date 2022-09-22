@@ -47,12 +47,12 @@ namespace Kanakku.Application.Requests.DailyOperation
                     EmployeeId = request.WorkedBy.Value,
                     WorkId = request.OperationId.Value,
                     VariantId = variant.OperationInstanceId,
-                    WorkedOn = request.WorkedOn.Value.Add(request.WorkedTime.Value).ToUniversalTime(),
+                    WorkedOn = request.WorkedOn.Value.Date.Add(request.WorkedTime.Value).ToUniversalTime(),
                     ModifiedOn = DateTime.UtcNow,
                     CreatedOn = DateTime.UtcNow,
                     CreatedBy = userId,
                     ModifiedBy = userId,
-                    Quantity = variant.Quantity
+                    Quantity = variant.Quantity,
                 });
                 prodVar.NetQuantity -= variant.Quantity;
             }

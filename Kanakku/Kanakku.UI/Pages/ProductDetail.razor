@@ -70,10 +70,11 @@ FullScreen = true,
 }">
     <DialogContent>
         <MudContainer Style="max-height: 100vh; overflow-y: scroll">
-            <MudText Typo="Typo.h6" Class="mt-5">Add New Product</MudText>
+            
             <MudForm Model="productDetails" Validation="@(productDetailsValidator.ValidateValue)" ValidationDelay="1"
                      @ref="productForum">
-                <div class="d-flex flex-row flex-wrap gap-3">
+                <div class="d-flex flex-row flex-wrap gap-3 w-100 w-sm-50 mx-0 mx-sm-auto my-8">
+                    <MudText Typo="Typo.h6" Class="mt-5 w-100">Add New Product</MudText>
                     <MudTextField @bind-Value="productDetails.Name"
                                   For="@(() => productDetails.Name)"
                                   Immediate="true"

@@ -186,6 +186,10 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(20)")
                         .HasColumnName("internal_name");
 
+                    b.Property<int?>("MasterId")
+                        .HasColumnType("integer")
+                        .HasColumnName("master_id");
+
                     b.Property<int>("Order")
                         .HasColumnType("integer")
                         .HasColumnName("order");
@@ -199,6 +203,9 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.HasKey("Id")
                         .HasName("pk_product_sizes");
 
+                    b.HasIndex("MasterId")
+                        .HasDatabaseName("ix_product_sizes_master_id");
+
                     b.ToTable("product_sizes", (string)null);
 
                     b.HasData(
@@ -206,6 +213,7 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         {
                             Id = 1,
                             InternalName = "small",
+                            MasterId = 1,
                             Order = 1,
                             Size = "S"
                         },
@@ -213,6 +221,7 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         {
                             Id = 2,
                             InternalName = "medium",
+                            MasterId = 1,
                             Order = 2,
                             Size = "M"
                         },
@@ -220,8 +229,42 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         {
                             Id = 3,
                             InternalName = "large",
+                            MasterId = 1,
                             Order = 3,
                             Size = "L"
+                        });
+                });
+
+            modelBuilder.Entity("Kanakku.Domain.Inventory.ProductSizeMaster", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("MasterName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("master_name");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("integer")
+                        .HasColumnName("order");
+
+                    b.HasKey("Id")
+                        .HasName("pk_product_size_master");
+
+                    b.ToTable("product_size_master", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            MasterName = "General",
+                            Order = 1
                         });
                 });
 
@@ -908,6 +951,16 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.Navigation("Product");
 
                     b.Navigation("ProductSize");
+                });
+
+            modelBuilder.Entity("Kanakku.Domain.Inventory.ProductSize", b =>
+                {
+                    b.HasOne("Kanakku.Domain.Inventory.ProductSizeMaster", "Master")
+                        .WithMany()
+                        .HasForeignKey("MasterId")
+                        .HasConstraintName("fk_product_sizes_product_size_master_master_id");
+
+                    b.Navigation("Master");
                 });
 
             modelBuilder.Entity("Kanakku.Domain.Inventory.Work", b =>

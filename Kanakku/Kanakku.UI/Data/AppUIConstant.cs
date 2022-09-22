@@ -10,6 +10,14 @@ namespace Kanakku.UI
             FullScreen = true,
             NoHeader = false,
             CloseOnEscapeKey = false,
+        }; 
+        
+        public static DialogOptions NormalDialogOption { get; } = new DialogOptions()
+        {
+            CloseButton = false,
+            FullScreen = false,
+            NoHeader = false,
+            CloseOnEscapeKey = true,
         };
     }
 }

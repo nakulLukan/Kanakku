@@ -1,5 +1,4 @@
 ﻿using Kanakku.Domain.Inventory;
-using Kanakku.Domain.Lookup;
 using Kanakku.Shared;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,23 +15,25 @@ namespace Kanakku.Infrastructure.Seeder
                 Id = id++,
                 InternalName = "small",
                 Order = 1,
-                Size = "S"
+                Size = "S",
+                MasterId = (int)SizeGroup.General
             });
             sizes.Add(new()
             {
                 Id = id++,
                 InternalName = "medium",
                 Order = 2,
-                Size = "M"
+                Size = "M",
+                MasterId = (int)SizeGroup.General
             });
             sizes.Add(new()
             {
                 Id = id,
                 InternalName = "large",
                 Order = 3,
-                Size = "L"
+                Size = "L",
+                MasterId = (int)SizeGroup.General
             });
-            
 
             foreach (var seed in sizes)
             {

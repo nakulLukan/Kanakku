@@ -43,25 +43,19 @@
     string fileName = "Choose a file";
     InputFile inputFile;
 
-    public override async Task SetParametersAsync(ParameterView parameters)
+    protected override async Task OnInitializedAsync()
     {
-        if (parameters.TryGetValue(nameof(ResourceId), out int? resourceId))
+        if (ResourceId.HasValue)
         {
-            if (resourceId != _resourceId && resourceId.HasValue)
+            await AppMediator.Send(new ResourceQuery
+                {
+                    ResourceId = ResourceId.Value
+                })
+            .OnSuccess(data =>
             {
-                parameters.SetParameterProperties(this);
-                await AppMediator.Send(new ResourceQuery
-                    {
-                        ResourceId = resourceId.Value
-                    })
-                    .OnSuccess(data =>
-                    {
-                        fileName = data.FileFullName;
-                    });
-            }
+                fileName = data.FileFullName;
+            });
         }
-
-        await base.SetParametersAsync(ParameterView.Empty);
     }
 
     async Task OnFileChange(InputFileChangeEventArgs eventArg)

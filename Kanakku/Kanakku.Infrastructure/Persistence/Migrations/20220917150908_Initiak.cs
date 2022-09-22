@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kanakku.Infrastructure.Persistence.Migrations
 {
-    public partial class Initial : Migration
+    public partial class Initiak : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -16,6 +16,9 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    file_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    extension = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
+                    file_full_name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     data = table.Column<byte[]>(type: "bytea", nullable: false),
                     created_by = table.Column<string>(type: "text", nullable: false),
                     created_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -53,18 +56,17 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "product_sizes",
+                name: "product_size_master",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    internal_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
                     order = table.Column<int>(type: "integer", nullable: false),
-                    size = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
+                    master_name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_product_sizes", x => x.id);
+                    table.PrimaryKey("pk_product_size_master", x => x.id);
                 });
 
             migrationBuilder.CreateTable(
@@ -149,31 +151,24 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "product_instances",
+                name: "product_sizes",
                 columns: table => new
                 {
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    product_size_id = table.Column<int>(type: "integer", nullable: false),
-                    product_id = table.Column<int>(type: "integer", nullable: false),
-                    quantity = table.Column<int>(type: "integer", nullable: false),
-                    net_quantity = table.Column<int>(type: "integer", nullable: false)
+                    internal_name = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: true),
+                    order = table.Column<int>(type: "integer", nullable: false),
+                    size = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    master_id = table.Column<int>(type: "integer", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("pk_product_instances", x => x.id);
+                    table.PrimaryKey("pk_product_sizes", x => x.id);
                     table.ForeignKey(
-                        name: "fk_product_instances_product_sizes_product_size_id",
-                        column: x => x.product_size_id,
-                        principalTable: "product_sizes",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "fk_product_instances_products_product_id",
-                        column: x => x.product_id,
-                        principalTable: "products",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        name: "fk_product_sizes_product_size_master_master_id",
+                        column: x => x.master_id,
+                        principalTable: "product_size_master",
+                        principalColumn: "id");
                 });
 
             migrationBuilder.CreateTable(
@@ -216,13 +211,19 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    date_of_birth = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    phone_number = table.Column<string>(type: "text", nullable: false),
+                    phone_number1 = table.Column<string>(type: "text", nullable: false),
+                    phone_number2 = table.Column<string>(type: "text", nullable: true),
+                    address_line_one = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
                     district_id = table.Column<int>(type: "integer", nullable: false),
                     state_id = table.Column<int>(type: "integer", nullable: false),
                     pincode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    address_line_one = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    image_id = table.Column<int>(type: "integer", nullable: true),
+                    epf_reg_no = table.Column<string>(type: "text", nullable: false),
+                    esi_reg_no = table.Column<string>(type: "text", nullable: false),
+                    dp_image_id = table.Column<int>(type: "integer", nullable: false),
+                    id_proof_image_id = table.Column<int>(type: "integer", nullable: false),
                     created_by = table.Column<string>(type: "text", nullable: false),
                     created_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     modified_by = table.Column<string>(type: "text", nullable: false),
@@ -232,8 +233,14 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 {
                     table.PrimaryKey("pk_employees", x => x.id);
                     table.ForeignKey(
-                        name: "fk_employees_binary_resources_image_id",
-                        column: x => x.image_id,
+                        name: "fk_employees_binary_resources_display_picture_id",
+                        column: x => x.dp_image_id,
+                        principalTable: "binary_resources",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_employees_binary_resources_id_proof_id",
+                        column: x => x.id_proof_image_id,
                         principalTable: "binary_resources",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
@@ -247,6 +254,34 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         name: "fk_employees_lookup_details_state_id",
                         column: x => x.state_id,
                         principalTable: "lookup_details",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "product_instances",
+                columns: table => new
+                {
+                    id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    product_size_id = table.Column<int>(type: "integer", nullable: false),
+                    product_id = table.Column<int>(type: "integer", nullable: false),
+                    quantity = table.Column<int>(type: "integer", nullable: false),
+                    net_quantity = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("pk_product_instances", x => x.id);
+                    table.ForeignKey(
+                        name: "fk_product_instances_product_sizes_product_size_id",
+                        column: x => x.product_size_id,
+                        principalTable: "product_sizes",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "fk_product_instances_products_product_id",
+                        column: x => x.product_id,
+                        principalTable: "products",
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -283,8 +318,10 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     id = table.Column<int>(type: "integer", nullable: false)
                         .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     work_id = table.Column<int>(type: "integer", nullable: false),
+                    variant_id = table.Column<int>(type: "integer", nullable: false),
                     employee_id = table.Column<Guid>(type: "uuid", nullable: false),
                     worked_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    quantity = table.Column<int>(type: "integer", nullable: false),
                     work_duration = table.Column<int>(type: "integer", nullable: false),
                     created_by = table.Column<string>(type: "text", nullable: false),
                     created_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
@@ -301,6 +338,12 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         principalColumn: "id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "fk_work_histories_product_instances_variant_id",
+                        column: x => x.variant_id,
+                        principalTable: "product_instances",
+                        principalColumn: "id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "fk_work_histories_works_work_id",
                         column: x => x.work_id,
                         principalTable: "works",
@@ -312,6 +355,11 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 table: "lookup_masters",
                 columns: new[] { "id", "created_by", "created_on", "dependent_lookup_master_id", "internal_name", "is_active", "modified_by", "modified_on" },
                 values: new object[] { 1, null, new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc), null, "state", true, null, new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc) });
+
+            migrationBuilder.InsertData(
+                table: "product_size_master",
+                columns: new[] { "id", "master_name", "order" },
+                values: new object[] { 1, "General", 1 });
 
             migrationBuilder.InsertData(
                 table: "lookup_details",
@@ -326,6 +374,16 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 table: "lookup_masters",
                 columns: new[] { "id", "created_by", "created_on", "dependent_lookup_master_id", "internal_name", "is_active", "modified_by", "modified_on" },
                 values: new object[] { 2, null, new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc), 1, "district", true, null, new DateTime(2022, 8, 14, 12, 0, 0, 0, DateTimeKind.Utc) });
+
+            migrationBuilder.InsertData(
+                table: "product_sizes",
+                columns: new[] { "id", "internal_name", "master_id", "order", "size" },
+                values: new object[,]
+                {
+                    { 1, "small", 1, 1, "S" },
+                    { 2, "medium", 1, 2, "M" },
+                    { 3, "large", 1, 3, "L" }
+                });
 
             migrationBuilder.InsertData(
                 table: "lookup_details",
@@ -362,9 +420,14 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 column: "district_id");
 
             migrationBuilder.CreateIndex(
-                name: "ix_employees_image_id",
+                name: "ix_employees_dp_image_id",
                 table: "employees",
-                column: "image_id");
+                column: "dp_image_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_employees_id_proof_image_id",
+                table: "employees",
+                column: "id_proof_image_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_employees_state_id",
@@ -397,9 +460,20 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 column: "product_size_id");
 
             migrationBuilder.CreateIndex(
+                name: "ix_product_sizes_master_id",
+                table: "product_sizes",
+                column: "master_id");
+
+            migrationBuilder.CreateIndex(
                 name: "ix_products_image_id",
                 table: "products",
                 column: "image_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_products_short_code",
+                table: "products",
+                column: "short_code",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "ix_work_cost_histories_work_id",
@@ -410,6 +484,11 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 name: "ix_work_histories_employee_id",
                 table: "work_histories",
                 column: "employee_id");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_work_histories_variant_id",
+                table: "work_histories",
+                column: "variant_id");
 
             migrationBuilder.CreateIndex(
                 name: "ix_work_histories_work_id",
@@ -433,19 +512,16 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 name: "app_users");
 
             migrationBuilder.DropTable(
-                name: "product_instances");
-
-            migrationBuilder.DropTable(
                 name: "work_cost_histories");
 
             migrationBuilder.DropTable(
                 name: "work_histories");
 
             migrationBuilder.DropTable(
-                name: "product_sizes");
+                name: "employees");
 
             migrationBuilder.DropTable(
-                name: "employees");
+                name: "product_instances");
 
             migrationBuilder.DropTable(
                 name: "works");
@@ -454,10 +530,16 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 name: "lookup_details");
 
             migrationBuilder.DropTable(
+                name: "product_sizes");
+
+            migrationBuilder.DropTable(
                 name: "products");
 
             migrationBuilder.DropTable(
                 name: "lookup_masters");
+
+            migrationBuilder.DropTable(
+                name: "product_size_master");
 
             migrationBuilder.DropTable(
                 name: "binary_resources");

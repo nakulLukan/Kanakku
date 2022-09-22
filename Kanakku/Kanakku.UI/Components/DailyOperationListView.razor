@@ -1,39 +1,53 @@
 ﻿@using AutoMapper
 @using Kanakku.Application.Contracts.Presentation
+@using Kanakku.Application.Contracts.Storage
 @using Kanakku.Application.Models.DailyOperation
 @using Kanakku.Application.Requests.DailyOperation
 @using Kanakku.Application.Requests.Product
 @using Kanakku.Application.Requests.User
+@using Kanakku.Shared.Extensions
 @using Kanakku.UI.Contracts.Event
 @using MediatR
+@using System.Linq;
+
 @inject IMediator Mediator
 @inject IAppMediator AppMediator
 @inject IMapper Mapper;
 @inject IToastService ToastService;
+@inject IMediator Mediator
 
-<div class="d-flex gap-3">
-    <div class="w-50">
+<MudGrid Justify="Justify.FlexStart">
+    <MudItem xs="12" sm="3">
         <MudForm Model="dailyOperation" ValidationDelay="1"
-                 @ref="addOperationForm">
+                 @ref="addOperationForm" Validation="dailyOperationValidator.ValidateValue">
             <div class="d-flex flex-row flex-wrap gap-3">
-                <MudDatePicker @bind-Date="@dailyOperation.WorkedOn"> </MudDatePicker>
-                <MudTimePicker @bind-Time="@dailyOperation.WorkedTime"> </MudTimePicker>
+                <MudDatePicker @bind-Date="@dailyOperation.WorkedOn"
+                               For="@(() => dailyOperation.WorkedOn)"
+                               Margin="Margin.Dense"> </MudDatePicker>
+                <MudTimePicker @bind-Time="@dailyOperation.WorkedTime"
+                               For="@(() => dailyOperation.WorkedTime)"
+                               Margin="Margin.Dense"> </MudTimePicker>
                 <SearchableSelect T="int?" @bind-SelectedItem="dailyOperation.ProductId" Label="Product"
                                   Values="Products.Select(x=> ((int?)x.ProductId, x.ProductName)).ToList()"
-                                  ValueChanged="OnProductSelect" />
+                                  ValueChanged="OnProductSelect"
+                                  For="@(() => dailyOperation.ProductId)" />
                 <SearchableSelect T="int?" @bind-SelectedItem="dailyOperation.OperationId" Label="Operation"
-                                  Values="Operations.Select(x=> ((int?)x.OperationId, x.OperationName)).ToList()" />
+                                  Values="Operations.Select(x=> ((int?)x.OperationId, x.OperationName)).ToList()"
+                                  For="@(() => dailyOperation.OperationId)" />
                 <SearchableSelect T="Guid?" @bind-SelectedItem="dailyOperation.WorkedBy" Label="Employee"
-                                  Values="Employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()" />
+                                  Values="Employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
+                                  For="@(() => dailyOperation.WorkedBy)" />
                 <div class="d-flex flex-wrap  flex-grow-1 gap-2 justify-space-between">
                     @foreach (var variant in dailyOperation.VariantsPerOperation)
                     {
-                        <MudPaper Class="border border-1 p-2 product-variant-quantity-border flex-grow-1" Elevation="0">
-                            <MudText Class="n2" Typo="Typo.caption">Size</MudText>
+                        <MudPaper Class="border border-1 product-variant-quantity-border flex-grow-1" Elevation="0">
+                            <MudText Class="n2 ps-4 pt-2" Typo="Typo.caption">Size</MudText>
                             <div class="d-flex justify-space-between">
                                 <MudCheckBox @bind-Checked="variant.IsChecked" Class="m-0 p-0"
                                          T="bool" Label="@Variants.First(x=>x.VariantId == variant.OperationInstanceId).SizeName"></MudCheckBox>
-                                <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity" HideSpinButtons="true" Min="0"
+                                <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity"
+                                             HideSpinButtons="true" Min="0"
+                                             Margin="Margin.Dense"
                                              @bind-Value="@variant.Quantity" Variant="Variant.Outlined" Style="max-width: 80px;"></MudNumericField>
                             </div>
                         </MudPaper>
@@ -48,28 +62,173 @@
                 </div>
             </div>
         </MudForm>
-    </div>
-    <div class="w-50">
-    </div>
-</div>
+    </MudItem>
+    <MudItem sm="9" xs="12">
+        <MudTable Items="@OperationItems" FixedHeader="true"
+                  Height="@UIComp.TABLE_HEIGHT_OPERATIONS" Dense="true" RowsPerPage="20"
+                  Bordered="true" Hover="true" Striped="true">
+            <ToolBarContent>
+                <div class="d-flex flex-row justify-space-between w-100">
+                    <MudText Typo="Typo.h6">Operations </MudText>
+                    <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
+                              Visible="@(filter.WorkedBy != null && filter.WorkedBy.Any()
+                                ||filter.Products != null && filter.Products.Any()
+                                || filter.WorkedFrom.HasValue || filter.WorkedTo.HasValue)">
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
+                                       Color="Color.Tertiary" Variant="Variant.Filled"
+                                       OnClick="(()=> showFilterWindow = true)"></MudIconButton>
+                    </MudBadge>
+
+                </div>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Worked By</MudTh>
+                <MudTh>Worked On</MudTh>
+                <MudTh>Product</MudTh>
+                <MudTh>Operation</MudTh>
+                <MudTh>Size</MudTh>
+                <MudTh>Qty</MudTh>
+                <MudTh>Amt</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Worked By">@context.WorkedBy</MudTd>
+                <MudTd DataLabel="Worked On">@context.WorkedOn.ToLocalTime().ToString(UIComp.DateTimeFormat)</MudTd>
+                <MudTd DataLabel="Product">@context.Product</MudTd>
+                <MudTd DataLabel="Operation">@context.Operation</MudTd>
+                <MudTd DataLabel="Size">@context.Variant</MudTd>
+                <MudTd DataLabel="Qty">@context.VariantQty</MudTd>
+                <MudTd DataLabel="Amt">@context.TotalAmount.ToCurrency()</MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
+    </MudItem>
+</MudGrid>
+
+<MudDialog IsVisible="showFilterWindow" Options="AppUIConstant.NormalDialogOption">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Configure filter conditions</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="12">
+                <MudExpansionPanels>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudBadge Icon="@Icons.Material.Rounded.FilterAlt" Color="Color.Success" Overlap="true" Bordered="true" Elevation="5">
+                                <MudText Typo="Typo.subtitle2">Filter by 'Worked On'</MudText>
+                            </MudBadge>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudRadioGroup @bind-SelectedOption="@filter.QuickFilter">
+                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.ThisMonth" Color="Color.Primary">This Month</MudRadio>
+                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.ThisWeek" Color="Color.Primary">This Week</MudRadio>
+                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.Today" Color="Color.Primary">Today</MudRadio>
+                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.LastMonth" Color="Color.Primary">Last Month</MudRadio>
+                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.LastWeek" Color="Color.Primary">Last Week</MudRadio>
+                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.Yesterday" Color="Color.Primary">Yesterday</MudRadio>
+                            </MudRadioGroup>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudDatePicker @bind-Date="filter.WorkedFrom" Label="Worked From"></MudDatePicker>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudDatePicker @bind-Date="filter.WorkedTo" Label="Worked Till" MinDate="filter.WorkedFrom?.AddDays(1)"></MudDatePicker>
+                                </MudItem>
+                            </MudGrid>
+                        </ChildContent>
+
+                    </MudExpansionPanel>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudBadge Icon="@Icons.Material.Rounded.FilterAlt" Color="Color.Success" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.WorkedBy != null && filter.WorkedBy.Any())">
+                                <MudText Typo="Typo.subtitle2">Filter by 'Worked By'</MudText>
+                            </MudBadge>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudSelect Dense="true" MultiSelection="true" HelperText="Worked By" T="Guid" Label="Worked By"
+                                       SelectAll="true"
+                                       @bind-SelectedValues="filter.WorkedBy" MultiSelectionTextFunc="GetMultiSelectedEmployees">
+                                @foreach (var emp in Employees)
+                                {
+                                    <MudSelectItem T="Guid" Value="@(emp.EmployeeId)">@emp.EmployeeName</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </ChildContent>
+
+                    </MudExpansionPanel>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudBadge Icon="@Icons.Material.Rounded.FilterAlt" Color="Color.Success" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.Products != null && filter.Products.Any())">
+                                <MudText Typo="Typo.subtitle2">Filter by 'Product Details'</MudText>
+                            </MudBadge>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudSelect Dense="true" MultiSelection="true" HelperText="Product" T="int" Label="Product"
+                                       SelectAll="true"
+                                       @bind-SelectedValues="filter.Products" MultiSelectionTextFunc="GetMultiSelectedProducts">
+                                @foreach (var prod in Products)
+                                {
+                                    <MudSelectItem T="int" Value="@(prod.ProductId)">@prod.ProductName</MudSelectItem>
+                                }
+                            </MudSelect>
+                            <MudSelect Dense="true" MultiSelection="true" HelperText="Operations" T="int" Label="Operations"
+                                       SelectAll="true"
+                                       @bind-SelectedValues="filter.Operations" MultiSelectionTextFunc="GetMultiSelectedOperations">
+                                @if ((filter.Products != null))
+                                {
+                                    @foreach (var operation in Products.Where(x => filter.Products.Contains(x.ProductId)).SelectMany(x => x.Operations))
+                                    {
+                                        <MudSelectItem T="int" Value="@(operation.OperationId)">@operation.OperationName</MudSelectItem>
+                                    }
+                                }
+                            </MudSelect>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            <MudItem xs="12">
+                <div class="d-flex flex-row justify-space-between">
+                    <div>
+                        <MudButton OnClick="(()=> showFilterWindow = false)" Variant="Variant.Outlined" Color="Color.Transparent">Close</MudButton>
+                        <MudButton OnClick="ResetFilterCondition" Variant="Variant.Outlined" Color="Color.Secondary">Clear Filter</MudButton>
+                    </div>
+                    <MudButton OnClick="FilterGridData" Variant="Variant.Filled" Color="Color.Success">Apply Filter</MudButton>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+    </DialogContent>
+</MudDialog>
 @code {
     MudForm addOperationForm;
     DailyOperationDto dailyOperation { get; set; } = new();
+    DailyOperationDtoValidator dailyOperationValidator { get; set; } = new();
 
     ProductMappingDto[] Products = new ProductMappingDto[0];
     OperationMappingDto[] Operations = new OperationMappingDto[0];
     VariantMappingDto[] Variants = new VariantMappingDto[0];
     EmployeeMappingDto[] Employees = new EmployeeMappingDto[0];
+    OperationItemDto[] OperationItems = new OperationItemDto[0];
+    DailyOperationFilterDto filter = new();
+    bool showFilterWindow = false;
+    string userId = string.Empty;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
+            filter = await Mediator.Send(new GetStoredFilterConditionQuery());
+
             var productsTask = Mediator.Send(new ProductMappingQuery());
             var employeesTask = Mediator.Send(new EmployeeMappingQuery());
             await Task.WhenAll(productsTask, employeesTask);
             Products = productsTask.Result;
             Employees = employeesTask.Result;
+            OperationItems = await Mediator.Send(BuildFilterDto());
             StateHasChanged();
         }
     }
@@ -93,6 +252,7 @@
     void ResetDetails()
     {
         dailyOperation = new();
+        addOperationForm.ResetValidation();
         dailyOperation.VariantsPerOperation = Products.FirstOrDefault(x => x.ProductId == dailyOperation.ProductId)
             ?.Variants?.Select(x => new OperaitonVariantDto
                 {
@@ -104,14 +264,97 @@
 
     async Task SubmitDetails()
     {
-        await AppMediator.Send(Mapper.Map(dailyOperation, new SubmitDailyOperationCommand()))
-            .OnSuccess(data =>
+        await addOperationForm.Validate();
+        if (addOperationForm.IsValid)
+        {
+            await AppMediator.Send(Mapper.Map(dailyOperation, new SubmitDailyOperationCommand()))
+                .OnSuccess(async data =>
+                {
+                    ToastService.Success("Daily operation added successfully.");
+                    OperationItems = await Mediator.Send(BuildFilterDto());
+
+                    await InvokeAsync(() =>
+                    {
+                        ResetDetails();
+                        StateHasChanged();
+                    });
+                })
+                .OnError(err =>
+                {
+                    ToastService.Error(err.Message);
+                });
+        }
+    }
+
+    string GetMultiSelectedEmployees(List<string> selectedValues)
+    {
+        if (!selectedValues.Any())
+        {
+            return string.Empty;
+        }
+
+        return string.Join(", ", selectedValues.Select(x => Employees.First(y => y.EmployeeId.ToString() == x).EmployeeName));
+    }
+
+    string GetMultiSelectedProducts(List<string> selectedValues)
+    {
+        if (!selectedValues.Any())
+        {
+            return string.Empty;
+        }
+
+        return string.Join(", ", selectedValues.Select(x => Products.First(y => y.ProductId.ToString() == x).ProductName));
+    }
+
+    string GetMultiSelectedOperations(List<string> selectedValues)
+    {
+        if (!selectedValues.Any())
+        {
+            return string.Empty;
+        }
+
+        return string.Join(", ", selectedValues.Select(x => Products.SelectMany(x => x.Operations).First(y => y.OperationId.ToString() == x).OperationName));
+    }
+
+    async Task ResetFilterCondition()
+    {
+        filter = new();
+        await SaveFilterConditionToStorage();
+    }
+
+    async Task FilterGridData()
+    {
+        showFilterWindow = false;
+        OperationItems = await Mediator.Send(BuildFilterDto());
+        StateHasChanged();
+        await SaveFilterConditionToStorage();
+    }
+
+    DailyOperationsQuery BuildFilterDto()
+    {
+        return new DailyOperationsQuery
             {
-                ToastService.Success("Daily operation added successfully.");
-            })
-            .OnError(err =>
+                Operations = filter.Operations,
+                Products = filter.Products,
+                Sizes = filter.Sizes,
+                WorkedBy = filter.WorkedBy,
+                WorkedFrom = filter.WorkedFrom,
+                WorkedTo = filter.WorkedTo,
+                QuickFilter = filter.QuickFilter
+            };
+    }
+
+    async Task SaveFilterConditionToStorage()
+    {
+        await Mediator.Send(new SaveFilterConditionCommand
             {
-                ToastService.Error(err.Message);
+                Operations = filter.Operations,
+                Products = filter.Products,
+                QuickFilter = filter.QuickFilter,
+                Sizes = filter.Sizes,
+                WorkedBy = filter.WorkedBy,
+                WorkedFrom = filter.WorkedFrom,
+                WorkedTo = filter.WorkedTo
             });
     }
 }
