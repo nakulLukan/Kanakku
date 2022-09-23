@@ -1,6 +1,5 @@
 ﻿using Kanakku.Infrastructure;
 using Kanakku.Infrastructure.Persistence;
-using Kanakku.UI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using MudBlazor.Services;
@@ -38,7 +37,6 @@ public static class MauiProgram
             builder.Services.AddBlazorWebViewDeveloperTools();
 
 #endif
-            builder.Services.AddSingleton<WeatherForecastService>();
 
             builder.Services.Register();
             builder.Services.RegisterInfrastructure();

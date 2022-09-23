@@ -1,15 +1,14 @@
 ﻿using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.User;
 using Kanakku.Shared;
+using Kanakku.Shared.Utilities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace Kanakku.Application.Requests.User;
 
-public class LoginQuery : IRequest<AppUserMinDto>
+public class LoginQuery : LoginDto, IRequest<AppUserMinDto>
 {
-    public string Username { get; set; }
-    public string Password { get; set; }
 }
 
 public class LoginQueryHandler : IRequestHandler<LoginQuery, AppUserMinDto>
@@ -31,12 +30,14 @@ public class LoginQueryHandler : IRequestHandler<LoginQuery, AppUserMinDto>
 
         if (userDetails is null)
         {
-            throw new Exception("User not found");
+            throw new AppException("Invalid username or password!!!");
         }
 
         await _appSecureStorage.SetAsync(SecureStorageKey.IS_LOGGED, true);
         await _appSecureStorage.SetAsync(SecureStorageKey.USER_ID, userDetails.Id);
-
+        AppInMemoryStore.IsLoggedIn = true;
+        AppInMemoryStore.UserId = userDetails.Id;
+        AppInMemoryStore.Username = userDetails.Username;
         return new AppUserMinDto()
         {
             Id = userDetails.Id,

@@ -1,9 +1,14 @@
 ﻿@inherits LayoutComponentBase
 
-<div class="page">
-	<main>
-		<article class="content px-4">
-			@Body
-		</article>
-	</main>
-</div>
+<MudThemeProvider />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraSmall"
+                   CloseButton="true"
+                   DisableBackdropClick="true"
+                   NoHeader="true"
+                   Position="DialogPosition.Center"
+                   CloseOnEscapeKey="true" />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudPaper Class="app-bg-primary"> @Body</MudPaper>
+</MudLayout>

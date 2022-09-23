@@ -1,4 +1,8 @@
-﻿@inherits LayoutComponentBase
+﻿@using Kanakku.Application.Requests.User
+@using Kanakku.UI.Contracts.Event
+@inherits LayoutComponentBase
+@inject IAppMediator AppMediator;
+@inject NavigationManager NavigationManager
 
 <MudThemeProvider />
 <MudDialogProvider FullWidth="true"
@@ -10,11 +14,11 @@
                    CloseOnEscapeKey="true" />
 <MudSnackbarProvider />
 <MudLayout>
-    <MudAppBar Elevation="0">
+    <MudAppBar Elevation="3" Dense="true" Class="py-1">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
         <MudSpacer />
-        <MudIconButton Icon="@Icons.Custom.Brands.MudBlazor" Color="Color.Inherit" Link="https://mudblazor.com/" Target="_blank" />
-        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/MudBlazor/MudBlazor/" Target="_blank" />
+        <MudText Color="Color.Inherit" Typo="Typo.subtitle2">@welcomText</MudText>
+        <MudIconButton Icon="@Icons.Material.Rounded.Logout" Color="Color.Inherit" OnClick="Logout"></MudIconButton>
     </MudAppBar>
     <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
         <MudDrawerHeader>
@@ -23,7 +27,7 @@
         <NavMenu />
     </MudDrawer>
     <MudMainContent>
-        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-6 vh-100">
             @Body
         </MudContainer>
     </MudMainContent>
@@ -32,9 +36,24 @@
 
 @code {
     bool _drawerOpen = true;
+    string welcomText = string.Empty;
 
     void DrawerToggle()
     {
         _drawerOpen = !_drawerOpen;
+    }
+
+    protected override void OnInitialized()
+    {
+        welcomText = $"Hi, {AppInMemoryStore.Username}";
+    }
+
+    async Task Logout()
+    {
+        await AppMediator.Send(new LogoutCommand())
+        .OnSuccess(data =>
+        {
+            NavigationManager.NavigateTo("login");
+        });
     }
 }
