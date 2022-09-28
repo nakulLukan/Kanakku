@@ -39,20 +39,20 @@
                                   Values="Employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
                                   For="@(() => dailyOperation.WorkedBy)" />
                 <div class="d-flex flex-wrap  flex-grow-1 gap-2 justify-space-between">
-                @foreach (var variant in dailyOperation.VariantsPerOperation)
-                {
-                            <MudPaper Class="border border-1 product-variant-quantity-border flex-grow-1" Elevation="0">
-                                <MudText Class="n2 ps-4 pt-2" Typo="Typo.caption">Size</MudText>
-                                <div class="d-flex justify-space-between">
-                                    <MudCheckBox @bind-Checked="variant.IsChecked" Class="m-0 p-0"
+                    @foreach (var variant in dailyOperation.VariantsPerOperation)
+                    {
+                        <MudPaper Class="border border-1 product-variant-quantity-border flex-grow-1" Elevation="0">
+                            <MudText Class="n2 ps-4 pt-2" Typo="Typo.caption">Size</MudText>
+                            <div class="d-flex justify-space-between">
+                                <MudCheckBox @bind-Checked="variant.IsChecked" Class="m-0 p-0"
                                          T="bool" Label="@Variants.First(x=>x.VariantId == variant.OperationInstanceId).SizeName"></MudCheckBox>
-                                    <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity"
+                                <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity"
                                              HideSpinButtons="true" Min="0"
                                              Margin="Margin.Dense"
                                              @bind-Value="@variant.Quantity" Variant="Variant.Outlined" Style="max-width: 80px;"></MudNumericField>
-                                </div>
-                            </MudPaper>
-                }
+                            </div>
+                        </MudPaper>
+                    }
                 </div>
 
                 <div class="d-flex flex-row justify-space-between my-8 w-100">
@@ -67,7 +67,9 @@
     <MudItem sm="9" xs="12">
         <MudTable Items="@OperationItems" FixedHeader="true"
                   Dense="true" RowsPerPage="10"
-                  Bordered="true" Hover="true" Striped="true">
+                  Bordered="true" Hover="true" Striped="true"
+                  Loading="isDataLoading"
+                  CustomFooter="true">
             <ToolBarContent>
                 <div class="d-flex flex-row justify-space-between w-100">
                     <MudText Typo="Typo.h6">Operations </MudText>
@@ -100,6 +102,15 @@
                 <MudTd DataLabel="Qty">@context.VariantQty</MudTd>
                 <MudTd DataLabel="Amt">@context.TotalAmount.ToCurrency()</MudTd>
             </RowTemplate>
+            <FooterContent>
+                <MudTFootRow>
+                    <MudTd colspan="7">
+                        <div class="d-flex flex-row-reverse">
+                            <MudText>Total Amount: <b>@OperationItems.Sum(x=>x.TotalAmount).ToCurrency()</b></MudText>
+                        </div>
+                     </MudTd>
+                </MudTFootRow>
+            </FooterContent>
             <PagerContent>
                 <MudTablePager />
             </PagerContent>
@@ -217,6 +228,7 @@
     DailyOperationFilterDto filter = new();
     bool showFilterWindow = false;
     string userId = string.Empty;
+    bool isDataLoading = false;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -229,7 +241,11 @@
             await Task.WhenAll(productsTask, employeesTask);
             Products = productsTask.Result;
             Employees = employeesTask.Result;
+
+            isDataLoading = true;
+            StateHasChanged();
             OperationItems = await Mediator.Send(BuildFilterDto());
+            isDataLoading = false;
             StateHasChanged();
         }
     }
@@ -272,6 +288,8 @@
                 .OnSuccess(async data =>
                 {
                     ToastService.Success("Daily operation added successfully.");
+                    isDataLoading = true;
+                    await InvokeAsync(StateHasChanged);
                     OperationItems = await Mediator.Send(BuildFilterDto());
 
                     await InvokeAsync(() =>
@@ -284,6 +302,8 @@
                 {
                     ToastService.Error(err.Message);
                 });
+            isDataLoading = false;
+            StateHasChanged();
         }
     }
 
@@ -326,7 +346,11 @@
     async Task FilterGridData()
     {
         showFilterWindow = false;
+
+        isDataLoading = true;
+        StateHasChanged();
         OperationItems = await Mediator.Send(BuildFilterDto());
+        isDataLoading = false;
         StateHasChanged();
         await SaveFilterConditionToStorage();
     }

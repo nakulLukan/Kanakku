@@ -4,6 +4,7 @@ public static class SecureStorageKey
 {
     public const string IS_LOGGED = "is_logged";
     public const string USER_ID = "user_id";
+    public const string USERNAME = "username";
     public const string USER_DAILY_OPERATION_FILTER = "daily-operations-{0}-key";
 }
 
@@ -29,7 +30,7 @@ public static class Constant
 public static class AppRegex
 {
     public const string NAME = "^[a-zA-Z ]+$";
-    public const string PHONE_NUMBER = "^[+]?[0-9]+$";
+    public const string PHONE_NUMBER = "^[+]?[0-9]*$";
     public const string PINCODE = "^[0-9]{6,}$";
     public const string EMAIL = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+$";
 }
@@ -39,4 +40,9 @@ public static class UIComp
     public const string TABLE_HEIGHT_DEFAULT = "60vh";
     public const string TABLE_HEIGHT_OPERATIONS = "60vh";
     public const string DateTimeFormat = "f";
+}
+
+public static class AppSetting
+{
+    public const string DATE_FORMAT = "dd-MMM-yyyy";
 }

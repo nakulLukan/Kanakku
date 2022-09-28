@@ -21,12 +21,14 @@ public class CreateUserAccountCommandHandler : IRequestHandler<CreateUserAccount
     }
     public async Task<AppUserMinDto> Handle(CreateUserAccountCommand request, CancellationToken cancellationToken)
     {
-        if (request.Password != request.ConfirmPassword)
+        request.Username = request.Username.Trim();
+        request.Password = request.Password.Trim();
+        if (request.Password != request.ConfirmPassword.Trim())
         {
             throw new AppException("'Password' and 'Confirm Password' should exactly match.");
         }
 
-        var isUsernameExists = await _appDbContext.AppUsers.AnyAsync(x => x.Username == request.Username, cancellationToken);
+        var isUsernameExists = await _appDbContext.AppUsers.AnyAsync(x => x.Username.ToLower() == request.Username.ToLower(), cancellationToken);
         if (isUsernameExists)
         {
             throw new AppException("Another user already exists with given 'Username'");

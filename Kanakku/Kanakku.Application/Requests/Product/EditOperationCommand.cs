@@ -70,7 +70,6 @@ public class EditOperationCommandValidator : AbstractValidator<EditOperationComm
     {
         RuleFor(x => x.OperationName)
             .NotEmpty()
-            .Matches(AppRegex.NAME)
             .MaximumLength(50);
 
         RuleFor(x => x.Rate)

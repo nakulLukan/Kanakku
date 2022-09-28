@@ -26,7 +26,7 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
             || x.PhoneNumber1 == request.PhoneNumber1
             || x.PhoneNumber1 == request.PhoneNumber2
             || x.PhoneNumber2 == request.PhoneNumber1
-            || x.PhoneNumber2 == request.PhoneNumber2)
+            || (x.PhoneNumber2 == request.PhoneNumber2 && !string.IsNullOrEmpty(request.PhoneNumber2)))
             .Select(x => new
             {
                 x.Id,
@@ -36,11 +36,11 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
                 x.Code
             }).ToListAsync(cancellationToken);
 
-        if(employees.Any(x=>x.Code.ToLower() == request.EmpCode.ToLower()))
+        if (employees.Any(x => x.Code == request.EmpCode))
         {
             throw new AppException("Employee code cannot be duplicate");
         }
-        if (employees.Any(x => x.Email == request.Email))
+        if (!string.IsNullOrEmpty(request.Email) && employees.Any(x => x.Email == request.Email))
         {
             throw new AppException("User with same email already regeistered.");
         }
@@ -48,7 +48,7 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
         if (employees.Any(x => x.PhoneNumber1 == request.PhoneNumber1
             || x.PhoneNumber1 == request.PhoneNumber2
             || x.PhoneNumber2 == request.PhoneNumber1
-            || x.PhoneNumber2 == request.PhoneNumber2))
+            || (x.PhoneNumber2 == request.PhoneNumber2 && !string.IsNullOrEmpty(request.PhoneNumber2))))
         {
             throw new AppException("User with same phone number already registered.");
         }
@@ -69,10 +69,11 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
             Code = request.EmpCode,
             PhoneNumber2 = request.PhoneNumber2,
             DateOfBirth = request.DateOfBirth.Value.ToUniversalTime(),
+            DateOfJoining = request.DateOfJoining.Value.ToUniversalTime(),
             EpfRegNo = request.EpfRegNo,
             EsiRegNo = request.EsiRegNo,
             DpImageId = request.DpImageId,
-            IdProofImageId = request.IdProofImageId.Value,
+            IdProofImageId = request.IdProofImageId,
         };
         _dbContext.Employees.Add(emp);
         await _dbContext.SaveAsync(cancellationToken);

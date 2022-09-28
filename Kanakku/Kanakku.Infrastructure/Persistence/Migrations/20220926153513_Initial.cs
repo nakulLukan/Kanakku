@@ -6,7 +6,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kanakku.Infrastructure.Persistence.Migrations
 {
-    public partial class Initiak : Migration
+    public partial class Initial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -211,19 +211,20 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                 {
                     id = table.Column<Guid>(type: "uuid", nullable: false),
                     name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    code = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    code = table.Column<int>(type: "integer", nullable: false),
                     date_of_birth = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    date_of_joining = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     email = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     phone_number1 = table.Column<string>(type: "text", nullable: false),
                     phone_number2 = table.Column<string>(type: "text", nullable: true),
                     address_line_one = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    district_id = table.Column<int>(type: "integer", nullable: false),
-                    state_id = table.Column<int>(type: "integer", nullable: false),
-                    pincode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
-                    epf_reg_no = table.Column<string>(type: "text", nullable: false),
-                    esi_reg_no = table.Column<string>(type: "text", nullable: false),
-                    dp_image_id = table.Column<int>(type: "integer", nullable: false),
-                    id_proof_image_id = table.Column<int>(type: "integer", nullable: false),
+                    district_id = table.Column<int>(type: "integer", nullable: true),
+                    state_id = table.Column<int>(type: "integer", nullable: true),
+                    pincode = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: true),
+                    epf_reg_no = table.Column<string>(type: "text", nullable: true),
+                    esi_reg_no = table.Column<string>(type: "text", nullable: true),
+                    dp_image_id = table.Column<int>(type: "integer", nullable: true),
+                    id_proof_image_id = table.Column<int>(type: "integer", nullable: true),
                     created_by = table.Column<string>(type: "text", nullable: false),
                     created_on = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     modified_by = table.Column<string>(type: "text", nullable: false),
@@ -236,14 +237,12 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         name: "fk_employees_binary_resources_display_picture_id",
                         column: x => x.dp_image_id,
                         principalTable: "binary_resources",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_employees_binary_resources_id_proof_id",
                         column: x => x.id_proof_image_id,
                         principalTable: "binary_resources",
-                        principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "id");
                     table.ForeignKey(
                         name: "fk_employees_lookup_details_district_id",
                         column: x => x.district_id,

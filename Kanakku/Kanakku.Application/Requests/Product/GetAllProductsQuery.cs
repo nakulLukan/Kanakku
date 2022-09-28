@@ -21,7 +21,7 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, L
 
     public async Task<List<ProductListDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
     {
-        return await _dbContext.Products.Where(x => x.IsActive)
+        var result = await _dbContext.Products.Where(x => x.IsActive)
             .Select(x => new ProductListDto
             {
                 Id = x.Id,
@@ -31,5 +31,8 @@ public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, L
             })
             .OrderBy(x => x.Name)
             .ToListAsync(cancellationToken);
+        int serialNum = 1;
+        result.ForEach(x => x.RowNumber = serialNum++);
+        return result;
     }
 }

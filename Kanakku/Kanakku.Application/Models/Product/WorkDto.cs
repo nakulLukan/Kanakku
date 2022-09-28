@@ -7,6 +7,7 @@ namespace Kanakku.Application.Models.Product
     public class WorkDto
     {
         public int Id { get; set; }
+        public int RowNumber { get; set; }
         public string WorkName { get; set; }
         public float Rate { get; set; }
         public int ProductId { get; set; }
@@ -18,7 +19,6 @@ namespace Kanakku.Application.Models.Product
         {
             RuleFor(x => x.WorkName)
                 .NotEmpty()
-                .Matches(AppRegex.NAME)
                 .MaximumLength(50);
 
             RuleFor(x => x.Rate)

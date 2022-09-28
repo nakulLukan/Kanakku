@@ -78,7 +78,7 @@ namespace Kanakku.Application.Requests.DailyOperation
                 {
                     Id = x.Id,
                     Operation = x.Work.Name,
-                    Product = x.Work.Product.Name,
+                    Product = $"{x.Work.Product.ShortCode} - {x.Work.Product.Name}",
                     Variant = x.Variant.ProductSize.Size,
                     VariantQty = x.Quantity,
                     WorkedOn = x.WorkedOn,

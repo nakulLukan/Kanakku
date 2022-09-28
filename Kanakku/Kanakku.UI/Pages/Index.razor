@@ -1,9 +1,8 @@
 ﻿@page "/"
 @using Kanakku.Application.Contracts.Storage
 @using Kanakku.Shared
-@inject Kanakku.Application.Contracts.Storage.IAppSecureStorage AppSecureStorage
-@inject NavigationManager NavigationManager;
 @using MudBlazor;
+@inject Kanakku.Application.Contracts.Storage.IAppSecureStorage AppSecureStorage
 
 @if (AppInMemoryStore.IsLoggedIn)
 {
@@ -30,19 +29,9 @@
 }
 
 @code {
-
     DailyOperationLayout viewLayout = DailyOperationLayout.ListView;
     protected override async Task OnInitializedAsync()
     {
         AppInMemoryStore.IsLoggedIn = await AppSecureStorage.GetAsync<bool>(SecureStorageKey.IS_LOGGED);
-        if (!AppInMemoryStore.IsLoggedIn)
-        {
-            NavigationManager.NavigateTo("login");
-            return;
-        }
-        else
-        {
-            AppInMemoryStore.UserId = await AppSecureStorage.GetAsync<Guid>(SecureStorageKey.USER_ID);
-        }
     }
 }

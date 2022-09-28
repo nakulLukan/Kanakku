@@ -29,14 +29,17 @@
                         </div>
                     </ToolBarContent>
                     <HeaderContent>
+                        <MudTh Style="width: 10px;">S/N</MudTh>
                         <MudTh>Operation</MudTh>
                         <MudTh>Rate</MudTh>
                     </HeaderContent>
                     <RowTemplate>
+                        <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
                         <MudTd DataLabel="Operation">@context.WorkName</MudTd>
                         <MudTd DataLabel="Rate">@context.Rate.ToCurrency()</MudTd>
                     </RowTemplate>
                     <FooterContent>
+                        <MudTh></MudTh>
                         <MudTh><MudText Typo="Typo.subtitle1">Total</MudText></MudTh>
                         <MudTh><MudText Typo="Typo.subtitle1">@productDetails.Works.Sum(x => x.Rate).ToCurrency()</MudText></MudTh>
                     </FooterContent>
@@ -83,7 +86,7 @@ FullScreen = true,
                     <MudTextField @bind-Value="productDetails.ShortCode"
                                   For="@(() => productDetails.ShortCode)"
                                   Immediate="true"
-                                  Label="Short Code"
+                                  Label="Model Number"
                                   Class="flex-grow-1" />
 
                     @foreach (var variant in productDetails.ProductVariants)

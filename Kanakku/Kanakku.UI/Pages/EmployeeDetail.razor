@@ -18,84 +18,98 @@
 
 @if (!isNewEmployee)
 {
-        <div class="d-flex flex-column flex-sm-row gap-4">
-            <div class="d-flex flex-1">
-                <div class="w-100">
-                    <MudPaper Elevation="0" Class="p-3">
-                        <div class="d-flex flex-row justify-space-between">
-                            <h5>Employee Details</h5>
-                            <MudButton Color="Color.Surface" OnClick="openEditEmployeeForm">Edit Details</MudButton>
-                        </div>
-                        <div class="mt-5">
-                            <table class="table table-borderless">
-                                <tbody>
-                                    <tr>
-                                        <td>Name</td>
-                                        <td>:</td>
-                                        <td><b>@employee.Name</b></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Employee Code</td>
-                                        <td>:</td>
-                                        <td><b>@employee.EmpCode</b></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Date of Birth</td>
-                                        <td>:</td>
-                                        <td><b>@(employee.DateOfBirth?.ToString("dd-MMM-yyyy")) (@(DateTime.UtcNow.Year - employee.DateOfBirth?.Year) Years)</b></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Address</td>
-                                        <td>:</td>
-                                        <td>
-                                            <b>
-                                                @employee.AddressLineOne
-                                                <br /> @employee.District, @employee.State
-                                                <br /> @employee.Pincode
-                                                <br /> Ct:- @string.Join(", ", new string[]{employee.PhoneNumber1, employee.PhoneNumber2})
-                                            </b>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>Email</td>
-                                        <td>:</td>
-                                        <td><b>@employee.Email</b></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Id Proof</td>
-                                        <td>:</td>
-                                        <td><MudImage Src="@idProof" Height="64" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>EPF Registration Number</td>
-                                        <td>:</td>
-                                        <td><b>@employee.EpfRegNo</b></td>
-                                    </tr>
-                                    <tr>
-                                        <td>ESI Registration Number</td>
-                                        <td>:</td>
-                                        <td><b>@employee.EsiRegNo</b></td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </MudPaper>
-                </div>
-            </div>
-            <div class="d-flex flex-column mx-auto">
-                <MudImage Src="@employeeDp" ObjectFit="ObjectFit.ScaleDown" Class="rounded-lg product-dp" />
-                @*<div class="mx-auto">
-            <InputFile id="productImage" OnChange="OnFileChange" hidden multiple accept=".jpg, .jpeg, .png" />
-            <MudButton Class="mt-2" HtmlTag="label"
-            Variant="MudBlazor.Variant.Filled"
-            Color="Color.Primary"
-            StartIcon="@Icons.Filled.CloudUpload"
-            for="productImage">
-            Upload
-            </MudButton>
-            </div>*@
+    <div class="d-flex flex-column flex-sm-row gap-4">
+        <div class="d-flex flex-1">
+            <div class="w-100">
+                <MudPaper Elevation="0" Class="p-3">
+                    <div class="d-flex flex-row justify-space-between">
+                        <h5>Employee Details</h5>
+                        <MudButton Color="Color.Surface" OnClick="openEditEmployeeForm">Edit Details</MudButton>
+                    </div>
+                    <div class="mt-5">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>:</td>
+                                    <td><b>@employee.Name</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Employee Code</td>
+                                    <td>:</td>
+                                    <td><b>@employee.EmpCode</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Date of Birth</td>
+                                    <td>:</td>
+                                    <td><b>@(employee.DateOfBirth?.ToString(AppSetting.DATE_FORMAT)) (@(DateTime.UtcNow.Year - employee.DateOfBirth?.Year) Years)</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Address</td>
+                                    <td>:</td>
+                                    <td>
+                                        <b>
+                                            @employee.AddressLineOne
+                                            <br /> @employee.District, @employee.State
+                                            <br /> @employee.Pincode
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Phone Number</td>
+                                    <td>:</td>
+                                    <td><b>@employee.PhoneNumber1 </b></td>
+                                </tr>
+                                <tr>
+                                    <td>Alternate Number</td>
+                                    <td>:</td>
+                                    <td><b>@employee.PhoneNumber2 </b></td>
+                                </tr>
+                                <tr>
+                                    <td>Email</td>
+                                    <td>:</td>
+                                    <td><b>@employee.Email</b></td>
+                                </tr>
+                                <tr>
+                                    <td>Id Proof</td>
+                                    <td>:</td>
+                                    <td><MudImage Src="@idProof" Height="64" /></td>
+                                </tr>
+                                <tr>
+                                    <td>Date of Joining</td>
+                                    <td>:</td>
+                                    <td><b>@(employee.DateOfJoining?.ToString(AppSetting.DATE_FORMAT))</b></td>
+                                </tr>
+                                <tr>
+                                    <td>EPF Registration Number</td>
+                                    <td>:</td>
+                                    <td><b>@employee.EpfRegNo</b></td>
+                                </tr>
+                                <tr>
+                                    <td>ESI Registration Number</td>
+                                    <td>:</td>
+                                    <td><b>@employee.EsiRegNo</b></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </MudPaper>
             </div>
         </div>
+        <div class="d-flex flex-column mx-auto">
+            <MudImage Src="@employeeDp" ObjectFit="ObjectFit.ScaleDown" Class="rounded-lg product-dp" />
+            @*<div class="mx-auto">
+        <InputFile id="productImage" OnChange="OnFileChange" hidden multiple accept=".jpg, .jpeg, .png" />
+        <MudButton Class="mt-2" HtmlTag="label"
+        Variant="MudBlazor.Variant.Filled"
+        Color="Color.Primary"
+        StartIcon="@Icons.Filled.CloudUpload"
+        for="productImage">
+        Upload
+        </MudButton>
+        </div>*@
+        </div>
+    </div>
 }
 
 @*Add employee modal*@
@@ -154,20 +168,20 @@
                                   Lines=3
                                   FullWidth=true />
                     <div class="d-flex flex-row flex-grow-1 gap-3 w-100">
-                        <MudSelect T="int" Label="State" Variant="MudBlazor.Variant.Text" @bind-Value="@employee.StateId"
+                        <MudSelect T="int?" Label="State" Variant="MudBlazor.Variant.Text" @bind-Value="@employee.StateId"
                                    For="@(() => employee.StateId)">
-                            <MudSelectItem Value="0">Select</MudSelectItem>
+                            <MudSelectItem Value="null" T="int?">Select</MudSelectItem>
                             @foreach (var state in States)
                             {
-                                <MudSelectItem Value="@(state.Id)">@state.Value</MudSelectItem>
+                                <MudSelectItem Value="@((int?)state.Id)" T="int?">@state.Value</MudSelectItem>
                             }
                         </MudSelect>
-                        <MudSelect T="int" Label="District" Variant="MudBlazor.Variant.Text" @bind-Value="@employee.DistrictId"
+                        <MudSelect T="int?" Label="District" Variant="MudBlazor.Variant.Text" @bind-Value="@employee.DistrictId"
                                    For="@(() => employee.DistrictId)">
-                            <MudSelectItem Value="0">Select</MudSelectItem>
+                            <MudSelectItem Value="null" T="int?">Select</MudSelectItem>
                             @foreach (var district in Districts)
                             {
-                                <MudSelectItem Value="@(district.Id)">@district.Value</MudSelectItem>
+                                <MudSelectItem Value="@(district.Id)" T="int?">@district.Value</MudSelectItem>
                             }
                         </MudSelect>
                     </div>
@@ -177,6 +191,14 @@
                                   Label="Pincode"
                                   Class="flex-grow-1"
                                   FullWidth=true />
+
+                    <MudDatePicker @bind-Date="employee.DateOfJoining"
+                                   For="@(() => employee.DateOfJoining)"
+                                   AllowKeyboardInput=true
+                                   MaxDate="DateTime.UtcNow"
+                                   Editable=true
+                                   Label="Date Of Joining"
+                                   Class="flex-grow-1" />
                     <MudTextField @bind-Value="employee.EpfRegNo"
                                   For="@(() => employee.EpfRegNo)"
                                   Immediate="true"
@@ -221,12 +243,12 @@
                                   Immediate="true"
                                   Label="Name"
                                   FullWidth=true />
-                    <MudTextField @bind-Value="editEmployee.EmpCode"
+                    <MudTextField Value="editEmployee.EmpCode"
                                   For="@(() => editEmployee.EmpCode)"
-                                  Immediate="true"
                                   Label="Employee Code"
                                   Class="flex-grow-1"
-                                  FullWidth=true />
+                                  FullWidth=true
+                                  Disabled=true />
                     <MudDatePicker @bind-Date="editEmployee.DateOfBirth"
                                    For="@(() => editEmployee.DateOfBirth)"
                                    AllowKeyboardInput=true
@@ -264,20 +286,20 @@
                                   Lines=3
                                   FullWidth=true />
                     <div class="d-flex flex-row flex-grow-1 gap-3 w-100">
-                        <MudSelect T="int" Label="State" Variant="MudBlazor.Variant.Text" @bind-Value="@editEmployee.StateId"
+                        <MudSelect T="int?" Label="State" Variant="MudBlazor.Variant.Text" @bind-Value="@editEmployee.StateId"
                                    For="@(() => editEmployee.StateId)">
-                            <MudSelectItem Value="0">Select</MudSelectItem>
+                            <MudSelectItem Value="null" T="int?">Select</MudSelectItem>
                             @foreach (var state in States)
                             {
-                                <MudSelectItem Value="@(state.Id)">@state.Value</MudSelectItem>
+                                <MudSelectItem Value="@(state.Id)" T="int?">@state.Value</MudSelectItem>
                             }
                         </MudSelect>
-                        <MudSelect T="int" Label="District" Variant="MudBlazor.Variant.Text" @bind-Value="@editEmployee.DistrictId"
+                        <MudSelect T="int?" Label="District" Variant="MudBlazor.Variant.Text" @bind-Value="@editEmployee.DistrictId"
                                    For="@(() => editEmployee.DistrictId)">
-                            <MudSelectItem Value="0">Select</MudSelectItem>
+                            <MudSelectItem Value="null" T="int?">Select</MudSelectItem>
                             @foreach (var district in Districts)
                             {
-                                <MudSelectItem Value="@(district.Id)">@district.Value</MudSelectItem>
+                                <MudSelectItem Value="@(district.Id)" T="int?">@district.Value</MudSelectItem>
                             }
                         </MudSelect>
                     </div>
@@ -287,6 +309,13 @@
                                   Label="Pincode"
                                   Class="flex-grow-1"
                                   FullWidth=true />
+                    <MudDatePicker @bind-Date="editEmployee.DateOfJoining"
+                                   For="@(() => editEmployee.DateOfJoining)"
+                                   AllowKeyboardInput=true
+                                   MaxDate="DateTime.UtcNow"
+                                   Editable=true
+                                   Label="Date Of Joining"
+                                   Class="flex-grow-1" />
                     <MudTextField @bind-Value="editEmployee.EpfRegNo"
                                   For="@(() => editEmployee.EpfRegNo)"
                                   Immediate="true"
@@ -375,14 +404,22 @@
                         EmpId = Guid.Parse(EmployeeId)
                     });
                 resetEmployee = employee.Clone();
-                employeeDp = (await Mediator.Send(new ResourceQuery()
-                    {
-                        ResourceId = employee.DpImageId.Value
-                    })).Base64String.ToEmployeeImgSource();
-                idProof = (await Mediator.Send(new ResourceQuery()
-                    {
-                        ResourceId = employee.IdProofImageId.Value
-                    })).Base64String.ToDefaultImgSource();
+
+                if (employee.DpImageId.HasValue)
+                {
+                    employeeDp = (await Mediator.Send(new ResourceQuery()
+                        {
+                            ResourceId = employee.DpImageId.Value
+                        })).Base64String.ToEmployeeImgSource();
+                }
+
+                if (employee.IdProofImageId.HasValue)
+                {
+                    idProof = (await Mediator.Send(new ResourceQuery()
+                        {
+                            ResourceId = employee.IdProofImageId.Value
+                        })).Base64String.ToDefaultImgSource();
+                }
                 StateHasChanged();
             }
         }
@@ -400,7 +437,8 @@
         }
     }
 
-    void openEditEmployeeForm(){
+    void openEditEmployeeForm()
+    {
         isEditEmpoyeeModalVisible = true;
         editEmployee = resetEmployee.Clone();
     }
@@ -443,14 +481,22 @@
                         EmpId = Guid.Parse(EmployeeId)
                     });
                 resetEmployee = employee.Clone();
-                employeeDp = (await Mediator.Send(new ResourceQuery()
-                    {
-                        ResourceId = employee.DpImageId.Value
-                    })).Base64String.ToEmployeeImgSource();
-                idProof = (await Mediator.Send(new ResourceQuery()
-                    {
-                        ResourceId = employee.IdProofImageId.Value
-                    })).Base64String.ToDefaultImgSource();
+
+                if (employee.DpImageId.HasValue)
+                {
+                    employeeDp = (await Mediator.Send(new ResourceQuery()
+                        {
+                            ResourceId = employee.DpImageId.Value
+                        })).Base64String.ToEmployeeImgSource();
+                }
+
+                if (employee.IdProofImageId.HasValue)
+                {
+                    idProof = (await Mediator.Send(new ResourceQuery()
+                        {
+                            ResourceId = employee.IdProofImageId.Value
+                        })).Base64String.ToDefaultImgSource();
+                }
                 await InvokeAsync(StateHasChanged);
             })
             .OnError(err =>

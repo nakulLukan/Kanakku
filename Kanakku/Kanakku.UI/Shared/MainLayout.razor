@@ -3,6 +3,8 @@
 @inherits LayoutComponentBase
 @inject IAppMediator AppMediator;
 @inject NavigationManager NavigationManager
+@inject Kanakku.Application.Contracts.Storage.IAppSecureStorage AppSecureStorage
+@inject NavigationManager NavigationManager;
 
 <MudThemeProvider />
 <MudDialogProvider FullWidth="true"
@@ -43,11 +45,6 @@
         _drawerOpen = !_drawerOpen;
     }
 
-    protected override void OnInitialized()
-    {
-        welcomText = $"Hi, {AppInMemoryStore.Username}";
-    }
-
     async Task Logout()
     {
         await AppMediator.Send(new LogoutCommand())
@@ -55,5 +52,20 @@
         {
             NavigationManager.NavigateTo("login");
         });
+    }
+    protected override async Task OnInitializedAsync()
+    {
+        AppInMemoryStore.IsLoggedIn = await AppSecureStorage.GetAsync<bool>(SecureStorageKey.IS_LOGGED);
+        if (!AppInMemoryStore.IsLoggedIn)
+        {
+            NavigationManager.NavigateTo("login");
+            return;
+        }
+        else
+        {
+            AppInMemoryStore.Username = await AppSecureStorage.GetAsync<string>(SecureStorageKey.USERNAME);
+            welcomText = $"Hi, {AppInMemoryStore.Username}";
+            AppInMemoryStore.UserId = await AppSecureStorage.GetAsync<Guid>(SecureStorageKey.USER_ID);
+        }
     }
 }

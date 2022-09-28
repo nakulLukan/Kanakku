@@ -25,10 +25,12 @@
         </div>
     </ToolBarContent>
     <HeaderContent>
+        <MudTh Style="width:10px;">S/N</MudTh>
         <MudTh>Name</MudTh>
         <MudTh>Employee Code</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Employee Code">@context.EmpCode</MudTd>
     </RowTemplate>

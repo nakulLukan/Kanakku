@@ -16,13 +16,15 @@
         </div>
     </ToolBarContent>
     <HeaderContent>
+        <MudTh Style="width: 10px;">S/N</MudTh>
         <MudTh>Name</MudTh>
-        <MudTh>Short Code</MudTh>
+        <MudTh>Model Number</MudTh>
         <MudTh>Quantity</MudTh>
     </HeaderContent>
     <RowTemplate>
+        <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
-        <MudTd DataLabel="Short Code">@context.ShortCode</MudTd>
+        <MudTd DataLabel="Model Number">@context.ShortCode</MudTd>
         <MudTd DataLabel="Quantity">@context.TotalQuantity</MudTd>
     </RowTemplate>
     <PagerContent>

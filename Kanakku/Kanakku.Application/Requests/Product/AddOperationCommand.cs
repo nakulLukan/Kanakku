@@ -63,7 +63,6 @@ public class AddOperationCommandValidator : AppAbstractValidator<AddOperationCom
     {
         RuleFor(x => x.OperationName)
             .NotEmpty()
-            .Matches(AppRegex.NAME)
             .MaximumLength(50);
 
         RuleFor(x => x.Rate)

@@ -28,7 +28,7 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
             || x.PhoneNumber1 == request.PhoneNumber1
             || x.PhoneNumber1 == request.PhoneNumber2
             || x.PhoneNumber2 == request.PhoneNumber1
-            || x.PhoneNumber2 == request.PhoneNumber2))
+            || (x.PhoneNumber2 == request.PhoneNumber2 && !string.IsNullOrEmpty(request.PhoneNumber2))))
             .Select(x => new
             {
                 x.Id,
@@ -38,7 +38,7 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
                 x.Code
             }).ToListAsync(cancellationToken);
 
-        if (employees.Any(x => x.Code.ToLower() == request.EmpCode.ToLower()))
+        if (employees.Any(x => x.Code == request.EmpCode))
         {
             throw new AppException("Employee code cannot be duplicate");
         }
@@ -50,7 +50,7 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
         if (employees.Any(x => x.PhoneNumber1 == request.PhoneNumber1
             || x.PhoneNumber1 == request.PhoneNumber2
             || x.PhoneNumber2 == request.PhoneNumber1
-            || x.PhoneNumber2 == request.PhoneNumber2))
+            || (x.PhoneNumber2 == request.PhoneNumber2 && !string.IsNullOrEmpty(request.PhoneNumber2))))
         {
             throw new AppException("User with same phone number already registered.");
         }
@@ -66,13 +66,13 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
         employee.AddressLineOne = request.AddressLineOne;
         employee.ModifiedOn = DateTime.UtcNow;
         employee.ModifiedBy = userId;
-        employee.Code = request.EmpCode;
+        employee.DateOfJoining = request.DateOfJoining.ToDateTimeKind().Value;
         employee.PhoneNumber2 = request.PhoneNumber2;
         employee.DateOfBirth = request.DateOfBirth.ToDateTimeKind().Value;
         employee.EpfRegNo = request.EpfRegNo;
         employee.EsiRegNo = request.EsiRegNo;
         employee.DpImageId = request.DpImageId;
-        employee.IdProofImageId = request.IdProofImageId.Value;
+        employee.IdProofImageId = request.IdProofImageId;
         await _dbContext.SaveAsync(cancellationToken);
 
         return employee.Id;

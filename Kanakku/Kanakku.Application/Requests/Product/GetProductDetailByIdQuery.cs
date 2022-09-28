@@ -20,7 +20,7 @@ namespace Kanakku.Application.Requests.Product
 
         public async Task<ProductDetailDto> Handle(GetProductDetailByIdQuery request, CancellationToken cancellationToken)
         {
-            return await _dbContext.Products.Select(x => new ProductDetailDto
+            var result = await _dbContext.Products.Select(x => new ProductDetailDto
             {
                 Id = x.Id,
                 ImageId = x.ImageId,
@@ -39,6 +39,9 @@ namespace Kanakku.Application.Requests.Product
                     SizeId = y.ProductSizeId,
                 }).ToList()
             }).SingleAsync(x => x.Id == request.Id, cancellationToken);
+            int rowNumber = 1;
+            result.Works.ForEach(x => x.RowNumber = rowNumber++);
+            return result;
         }
     }
 }

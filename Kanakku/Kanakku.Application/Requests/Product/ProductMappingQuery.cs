@@ -24,7 +24,7 @@ namespace Kanakku.Application.Requests.Product
                 .Select(x => new ProductMappingDto
                 {
                     ProductId = x.Id,
-                    ProductName = x.Name,
+                    ProductName = $"{x.ShortCode} - {x.Name}",
                     Variants = x.ProductInstances.Select(y => new VariantMappingDto
                     {
                         VariantId = y.Id,

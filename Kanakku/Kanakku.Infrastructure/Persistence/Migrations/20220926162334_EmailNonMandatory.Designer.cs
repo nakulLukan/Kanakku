@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Kanakku.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20220917150908_Initiak")]
-    partial class Initiak
+    [Migration("20220926162334_EmailNonMandatory")]
+    partial class EmailNonMandatory
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -822,10 +822,8 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("address_line_one");
 
-                    b.Property<string>("Code")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)")
+                    b.Property<int>("Code")
+                        .HasColumnType("integer")
                         .HasColumnName("code");
 
                     b.Property<string>("CreatedBy")
@@ -841,32 +839,32 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("date_of_birth");
 
-                    b.Property<int>("DistrictId")
+                    b.Property<DateTime>("DateOfJoining")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("date_of_joining");
+
+                    b.Property<int?>("DistrictId")
                         .HasColumnType("integer")
                         .HasColumnName("district_id");
 
                     b.Property<int?>("DpImageId")
-                        .IsRequired()
                         .HasColumnType("integer")
                         .HasColumnName("dp_image_id");
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("email");
 
                     b.Property<string>("EpfRegNo")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("epf_reg_no");
 
                     b.Property<string>("EsiRegNo")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("esi_reg_no");
 
-                    b.Property<int>("IdProofImageId")
+                    b.Property<int?>("IdProofImageId")
                         .HasColumnType("integer")
                         .HasColumnName("id_proof_image_id");
 
@@ -895,12 +893,11 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                         .HasColumnName("phone_number2");
 
                     b.Property<string>("Pincode")
-                        .IsRequired()
                         .HasMaxLength(10)
                         .HasColumnType("character varying(10)")
                         .HasColumnName("pincode");
 
-                    b.Property<int>("StateId")
+                    b.Property<int?>("StateId")
                         .HasColumnType("integer")
                         .HasColumnName("state_id");
 
@@ -1085,15 +1082,11 @@ namespace Kanakku.Infrastructure.Persistence.Migrations
                     b.HasOne("Kanakku.Domain.Attachment.BinaryResource", "DisplayPicture")
                         .WithMany()
                         .HasForeignKey("DpImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_employees_binary_resources_display_picture_id");
 
                     b.HasOne("Kanakku.Domain.Attachment.BinaryResource", "IdProof")
                         .WithMany()
                         .HasForeignKey("IdProofImageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
                         .HasConstraintName("fk_employees_binary_resources_id_proof_id");
 
                     b.HasOne("Kanakku.Domain.Lookup.LookupDetail", "State")

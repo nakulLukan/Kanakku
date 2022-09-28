@@ -20,7 +20,7 @@ public class GetAllEmployeesQueryHandler : IRequestHandler<GetAllEmployeesQuery,
 
     public async Task<List<EmployeeDto>> Handle(GetAllEmployeesQuery request, CancellationToken cancellationToken)
     {
-        return await _dbContext.Employees.Select(x => new EmployeeDto
+        var result = await _dbContext.Employees.Select(x => new EmployeeDto
         {
             Id = x.Id,
             Name = x.Name,
@@ -39,6 +39,10 @@ public class GetAllEmployeesQueryHandler : IRequestHandler<GetAllEmployeesQuery,
             EsiRegNo = x.EsiRegNo,
             IdProofImageId = x.IdProofImageId,
             PhoneNumber2 = x.PhoneNumber2,
-        }).ToListAsync(cancellationToken);
+        }).OrderBy(x => x.EmpCode).ToListAsync(cancellationToken);
+
+        int rowNum = 1;
+        result.ForEach(x => x.RowNumber = rowNum++);
+        return result;
     }
 }
