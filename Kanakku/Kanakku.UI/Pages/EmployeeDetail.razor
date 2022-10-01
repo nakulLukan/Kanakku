@@ -15,16 +15,17 @@
 @inject IToastService ToastService
 @inject IMapper Mapper;
 @inject NavigationManager NavigationManager
+@inject IDialogService DialogService
 
 @if (!isNewEmployee)
 {
-    <div class="d-flex flex-column flex-sm-row gap-4">
-        <div class="d-flex flex-1">
+    <MudGrid>
+        <MudItem xs="12" md="7">
             <div class="w-100">
                 <MudPaper Elevation="0" Class="p-3">
                     <div class="d-flex flex-row justify-space-between">
                         <h5>Employee Details</h5>
-                        <MudButton Color="Color.Surface" OnClick="openEditEmployeeForm">Edit Details</MudButton>
+                        <MudButton Color="Color.Primary" OnClick="openEditEmployeeForm">Edit Details</MudButton>
                     </div>
                     <div class="mt-5">
                         <table class="table table-borderless">
@@ -50,7 +51,9 @@
                                     <td>
                                         <b>
                                             @employee.AddressLineOne
-                                            <br /> @employee.District, @employee.State
+                                            <br /> @(
+                                         string.Join(", ", new string[] { employee.District, employee.State }.Where(x => !string.IsNullOrEmpty(x)))
+                                         )
                                             <br /> @employee.Pincode
                                         </b>
                                     </td>
@@ -95,19 +98,25 @@
                     </div>
                 </MudPaper>
             </div>
+        </MudItem>
+        <MudItem xs="12" md="5">
+            <MudGrid Spacing="3">
+                <MudItem xs="12">
+                    <MudImage Src="@employeeDp" ObjectFit="ObjectFit.ScaleDown" Class="rounded-lg product-dp" />
+                </MudItem>
+                <MudItem xs="12">
+                    <MudPaper Class="p-4">
+                        <MudText>Choose date of resignation</MudText>
+                        <MudDatePicker Variant="Variant.Filled" Color="Color.Primary" Label="Date of Resignation" DateChanged="OnRegsignationDateChanged"></MudDatePicker>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudItem>
+    </MudGrid>
+    <div class="d-flex flex-column flex-sm-row gap-4">
+        <div class="d-flex flex-1">
         </div>
         <div class="d-flex flex-column mx-auto">
-            <MudImage Src="@employeeDp" ObjectFit="ObjectFit.ScaleDown" Class="rounded-lg product-dp" />
-            @*<div class="mx-auto">
-        <InputFile id="productImage" OnChange="OnFileChange" hidden multiple accept=".jpg, .jpeg, .png" />
-        <MudButton Class="mt-2" HtmlTag="label"
-        Variant="MudBlazor.Variant.Filled"
-        Color="Color.Primary"
-        StartIcon="@Icons.Filled.CloudUpload"
-        for="productImage">
-        Upload
-        </MudButton>
-        </div>*@
         </div>
     </div>
 }
@@ -503,5 +512,20 @@
             {
                 ToastService.Error(err.Message);
             });
+    }
+
+    async Task OnRegsignationDateChanged(DateTime? datetime)
+    {
+        bool? result = await DialogService.ShowMessageBox(
+            "Confirm",
+            $"Are you sure you want to set the resignation date to {datetime?.ToShortDateString()}",
+            yesText: "Confirm", cancelText: "Cancel", options: new DialogOptions(){
+NoHeader = false
+            });
+        if (result.HasValue && result.Value)
+        {
+
+        }
+        StateHasChanged();
     }
 }

@@ -20,28 +20,36 @@ namespace Kanakku.Application.Requests.User
 
         public async Task<EmployeeDto> Handle(GetEmployeeDetailByIdQuery request, CancellationToken cancellationToken)
         {
-            return await appDbContext.Employees
-                .Select(x => new EmployeeDto
-                {
-                    Id = x.Id,
-                    AddressLineOne = x.AddressLineOne,
-                    DateOfBirth = x.DateOfBirth,
-                    DistrictId = x.DistrictId,
-                    StateId = x.StateId,
-                    EmpCode = x.Code,
-                    Email = x.Email,
-                    Pincode = x.Pincode,
-                    PhoneNumber2 = x.PhoneNumber2,
-                    PhoneNumber1 = x.PhoneNumber1,
-                    DpImageId = x.DpImageId,
-                    Name = x.Name,
-                    IdProofImageId = x.IdProofImageId,
-                    EpfRegNo = x.EpfRegNo,
-                    EsiRegNo = x.EsiRegNo,
-                    State = x.State.Value,
-                    District = x.District.Value,
-                })
-                .FirstAsync(x => x.Id == request.EmpId, cancellationToken);
+            return await (from emp in appDbContext.Employees
+                          join state in appDbContext.LookupDetails
+                          on emp.StateId equals state.Id into States
+                          from s in States.DefaultIfEmpty()
+                          join district in appDbContext.LookupDetails
+                          on emp.DistrictId equals district.Id into Districts
+                          from d in Districts.DefaultIfEmpty()
+                          orderby emp.Code
+                          select new EmployeeDto
+                          {
+                              Id = emp.Id,
+                              Name = emp.Name,
+                              DistrictId = emp.DistrictId,
+                              District = d.Value,
+                              Email = emp.Email,
+                              StateId = emp.StateId,
+                              State = s.Value,
+                              Pincode = emp.Pincode,
+                              PhoneNumber1 = emp.PhoneNumber1,
+                              AddressLineOne = emp.AddressLineOne,
+                              DateOfBirth = emp.DateOfBirth,
+                              DpImageId = emp.DpImageId,
+                              EmpCode = emp.Code,
+                              EpfRegNo = emp.EpfRegNo,
+                              EsiRegNo = emp.EsiRegNo,
+                              IdProofImageId = emp.IdProofImageId,
+                              PhoneNumber2 = emp.PhoneNumber2,
+                              DateOfJoining = emp.DateOfJoining,
+                          })
+                          .FirstAsync(x => x.Id == request.EmpId, cancellationToken);
         }
     }
 }

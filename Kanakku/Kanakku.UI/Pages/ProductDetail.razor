@@ -21,7 +21,7 @@
                 <MudTable Items="@productDetails.Works" FixedHeader=true FixedFooter=true Hover="true" Breakpoint="Breakpoint.Sm"
                       LoadingProgressColor="Color.Info" Striped=true Bordered=true Elevation="1" Class="w-100"
                       Height="@UIComp.TABLE_HEIGHT_DEFAULT"
-                      T="WorkDto" OnRowClick="(e=> OnOperationSelect(e.Item))">
+                      T="WorkDto">
                     <ToolBarContent>
                         <div class="d-flex flex-row justify-space-between w-100">
                             <MudText Typo="Typo.h6">@productDetails.Name</MudText>
@@ -32,16 +32,21 @@
                         <MudTh Style="width: 10px;">S/N</MudTh>
                         <MudTh>Operation</MudTh>
                         <MudTh>Rate</MudTh>
+                        <MudTh>Action</MudTh>
                     </HeaderContent>
                     <RowTemplate>
                         <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
                         <MudTd DataLabel="Operation">@context.WorkName</MudTd>
                         <MudTd DataLabel="Rate">@context.Rate.ToCurrency()</MudTd>
+                         <MudTd DataLabel="Action">
+                            <MudButton Variant="MudBlazor.Variant.Text" Color="Color.Info" OnClick="(()=> OnOperationSelect(context))"> Edit Operation</MudButton>
+                        </MudTd>
                     </RowTemplate>
                     <FooterContent>
                         <MudTh></MudTh>
                         <MudTh><MudText Typo="Typo.subtitle1">Total</MudText></MudTh>
                         <MudTh><MudText Typo="Typo.subtitle1">@productDetails.Works.Sum(x => x.Rate).ToCurrency()</MudText></MudTh>
+                        <MudTh></MudTh>
                     </FooterContent>
                     <PagerContent>
                         <MudTablePager />

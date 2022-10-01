@@ -7,8 +7,7 @@
 
 <MudTable Items="@Products" FixedHeader=true Hover="true" Breakpoint="Breakpoint.Sm"
           LoadingProgressColor="Color.Info" Striped=true Bordered=true Elevation="1"
-          OnRowClick="@(x => SelectProduct(x.Item))" T="ProductListDto"
-          Height="@UIComp.TABLE_HEIGHT_DEFAULT">
+          T="ProductListDto" Dense="true" RowsPerPage="10">
     <ToolBarContent>
         <div class="d-flex flex-row w-100 justify-space-between">
             <MudText Typo="Typo.h6">Products</MudText>
@@ -20,12 +19,16 @@
         <MudTh>Name</MudTh>
         <MudTh>Model Number</MudTh>
         <MudTh>Quantity</MudTh>
+        <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Model Number">@context.ShortCode</MudTd>
         <MudTd DataLabel="Quantity">@context.TotalQuantity</MudTd>
+        <MudTd DataLabel="Action">
+            <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> SelectProduct(context))"> view details</MudButton>
+        </MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />

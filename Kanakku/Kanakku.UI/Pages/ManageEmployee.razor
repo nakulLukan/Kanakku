@@ -16,8 +16,7 @@
 
 <MudTable Items="@Employees" FixedHeader=true Hover="true" Breakpoint="Breakpoint.Sm"
           LoadingProgressColor="Color.Info" Striped=true Bordered=true Elevation="1"
-          T="EmployeeDto" OnRowClick="(x=> EditEmployee(x.Item))"
-          Height="@UIComp.TABLE_HEIGHT_DEFAULT">
+          T="EmployeeDto" Dense="true" RowsPerPage="10">
     <ToolBarContent>
         <div class="d-flex flex-row w-100 justify-space-between">
             <MudText Typo="Typo.h6">Employees</MudText>
@@ -28,11 +27,23 @@
         <MudTh Style="width:10px;">S/N</MudTh>
         <MudTh>Name</MudTh>
         <MudTh>Employee Code</MudTh>
+        <MudTh>DOB</MudTh>
+        <MudTh>Address</MudTh>
+        <MudTh>Contact Number</MudTh>
+        <MudTh>Date of Joining</MudTh>
+        <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Employee Code">@context.EmpCode</MudTd>
+        <MudTd DataLabel="DOB">@context.DateOfBirth</MudTd>
+        <MudTd DataLabel="Address">@context.AddressLineOne</MudTd>
+        <MudTd DataLabel="Contact Number">@context.PhoneNumber1</MudTd>
+        <MudTd DataLabel="Date of Joining">@context.DateOfJoining</MudTd>
+        <MudTd DataLabel="Action">
+            <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))"> view details</MudButton>
+        </MudTd>
     </RowTemplate>
     <PagerContent>
         <MudTablePager />

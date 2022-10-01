@@ -24,7 +24,7 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
 
     public async Task<Guid> Handle(EditEmployeeCommand request, CancellationToken cancellationToken)
     {
-        var employees = await _dbContext.Employees.Where(x => x.Id != request.Id && (x.Email == request.Email
+        var employees = await _dbContext.Employees.Where(x => x.Id != request.Id && ((x.Email == request.Email && !string.IsNullOrEmpty(x.Email))
             || x.PhoneNumber1 == request.PhoneNumber1
             || x.PhoneNumber1 == request.PhoneNumber2
             || x.PhoneNumber2 == request.PhoneNumber1
