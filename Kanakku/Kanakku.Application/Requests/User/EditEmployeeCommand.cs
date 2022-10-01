@@ -66,9 +66,9 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
         employee.AddressLineOne = request.AddressLineOne;
         employee.ModifiedOn = DateTime.UtcNow;
         employee.ModifiedBy = userId;
-        employee.DateOfJoining = request.DateOfJoining.ToDateTimeKind().Value;
+        employee.DateOfJoining = request.DateOfJoining.Value.ToUniversalTime();
+        employee.DateOfBirth = request.DateOfBirth.Value.ToUniversalTime();
         employee.PhoneNumber2 = request.PhoneNumber2;
-        employee.DateOfBirth = request.DateOfBirth.ToDateTimeKind().Value;
         employee.EpfRegNo = request.EpfRegNo;
         employee.EsiRegNo = request.EsiRegNo;
         employee.DpImageId = request.DpImageId;

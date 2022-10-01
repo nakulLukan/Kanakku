@@ -19,7 +19,7 @@ namespace Kanakku.Application.Requests.User
 
         public async Task<EmployeeMappingDto[]> Handle(EmployeeMappingQuery request, CancellationToken cancellationToken)
         {
-            return await _appDbContext.Employees.OrderBy(x => x.Name)
+            return await _appDbContext.Employees.OrderBy(x => x.Code)
                 .Select(x => new EmployeeMappingDto
                 {
                     EmployeeId = x.Id,

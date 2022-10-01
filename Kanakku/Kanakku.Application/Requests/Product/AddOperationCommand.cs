@@ -1,16 +1,9 @@
 ﻿using FluentValidation;
 using Kanakku.Application.Contracts.Storage;
 using Kanakku.Domain.Inventory;
-using Kanakku.Shared;
 using Kanakku.Shared.Utilities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Kanakku.Application.Requests.Product;
 
@@ -35,6 +28,9 @@ public class AddOperationCommandHandler : IRequestHandler<AddOperationCommand, i
     public async Task<int> Handle(AddOperationCommand request, CancellationToken cancellationToken)
     {
         var userId = await _sessionContext.GetUserId();
+        var product = await _dbContext.Products
+            .Include(x => x.ProductInstances)
+            .FirstAsync(x => x.Id == request.ProductId, cancellationToken);
         Work work = new Work
         {
             Cost = request.Rate,
@@ -45,9 +41,14 @@ public class AddOperationCommandHandler : IRequestHandler<AddOperationCommand, i
             CreatedOn = DateTime.UtcNow,
             CreatedBy = userId,
             ModifiedBy = userId,
-            ModifiedOn = DateTime.UtcNow
+            ModifiedOn = DateTime.UtcNow,
+            ProductWorkInstances = product.ProductInstances.Select(x => new ProductWorkInstance
+            {
+                NetQuantity = x.Quantity,
+                ProductInstanceId = x.Id,
+            }).ToList()
         };
-        if(await _dbContext.Works.AnyAsync(x => x.ProductId == request.ProductId && x.Name.ToLower() == request.OperationName.ToLower(), cancellationToken))
+        if (await _dbContext.Works.AnyAsync(x => x.ProductId == request.ProductId && x.Name.ToLower() == request.OperationName.ToLower(), cancellationToken))
         {
             throw new AppException($"Operation with name '{request.OperationName}' already exists for this product. Please use another name.");
         }

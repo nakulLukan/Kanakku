@@ -1,5 +1,6 @@
 ﻿using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.User;
+using Kanakku.Shared.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,7 +21,7 @@ namespace Kanakku.Application.Requests.User
 
         public async Task<EmployeeDto> Handle(GetEmployeeDetailByIdQuery request, CancellationToken cancellationToken)
         {
-            return await (from emp in appDbContext.Employees
+            var result = await (from emp in appDbContext.Employees
                           join state in appDbContext.LookupDetails
                           on emp.StateId equals state.Id into States
                           from s in States.DefaultIfEmpty()
@@ -50,6 +51,9 @@ namespace Kanakku.Application.Requests.User
                               DateOfJoining = emp.DateOfJoining,
                           })
                           .FirstAsync(x => x.Id == request.EmpId, cancellationToken);
+            result.DateOfBirth = result.DateOfBirth.ToDateTimeKind().Value.ToLocalTime();
+            result.DateOfJoining = result.DateOfJoining.ToDateTimeKind().Value.ToLocalTime();
+            return result;
         }
     }
 }

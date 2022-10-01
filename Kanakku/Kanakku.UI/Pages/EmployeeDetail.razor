@@ -101,8 +101,10 @@
         </MudItem>
         <MudItem xs="12" md="5">
             <MudGrid Spacing="3">
-                <MudItem xs="12">
-                    <MudImage Src="@employeeDp" ObjectFit="ObjectFit.ScaleDown" Class="rounded-lg product-dp" />
+                <MudItem xs="12" >
+                    <MudPaper Class="p-4 text-center">
+                    <MudImage Src="@employeeDp" ObjectFit="ObjectFit.Contain" Class="rounded-lg product-dp" Elevation="0"/>
+                    </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
                     <MudPaper Class="p-4">
@@ -113,12 +115,6 @@
             </MudGrid>
         </MudItem>
     </MudGrid>
-    <div class="d-flex flex-column flex-sm-row gap-4">
-        <div class="d-flex flex-1">
-        </div>
-        <div class="d-flex flex-column mx-auto">
-        </div>
-    </div>
 }
 
 @*Add employee modal*@
@@ -146,6 +142,7 @@
                                    MaxDate="DateTime.UtcNow"
                                    Editable=true
                                    Label="DOB"
+                                   TransformOrigin="Origin.CenterLeft"
                                    Class="flex-grow-1" />
                     <MudTextField @bind-Value="employee.Email"
                                   For="@(() => employee.Email)"
@@ -206,6 +203,7 @@
                                    AllowKeyboardInput=true
                                    MaxDate="DateTime.UtcNow"
                                    Editable=true
+                                   TransformOrigin="Origin.CenterLeft"
                                    Label="Date Of Joining"
                                    Class="flex-grow-1" />
                     <MudTextField @bind-Value="employee.EpfRegNo"

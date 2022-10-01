@@ -19,11 +19,7 @@
                     <MudListItem Text="@group.Key" Expanded="true"
                              InitiallyExpanded="true">
                         <NestedList>
-                            @foreach (var size in group)
-                            {
-                                <MudListItem Text="@size.Value"></MudListItem>
-                            }
-                            <MudItem Class="d-flex gap-3 mx-4">
+                            <MudItem Class="d-flex gap-3 mx-4 my-1">
                                 <MudTextField T="String" Variant="Variant.Filled" Label="Size"
                                           @bind-Value="@sizeName" FullWidth="true"
                                           Class="mt-0"></MudTextField>
@@ -31,6 +27,11 @@
                                            Variant="MudBlazor.Variant.Filled" Color="Color.Primary"
                                            OnClick="(async()=> await SaveProductSize(group.First().MasterId.Value))"></MudIconButton>
                             </MudItem>
+
+                            @foreach (var size in group)
+                            {
+                                <MudListItem Text="@size.Value"></MudListItem>
+                            }
                         </NestedList>
                     </MudListItem>
                 }

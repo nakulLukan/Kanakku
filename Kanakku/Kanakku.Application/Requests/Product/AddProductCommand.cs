@@ -43,7 +43,6 @@ public class AddProductCommandHandler : IRequestHandler<AddProductCommand, Respo
         };
         product.ProductInstances = request.ProductVariants.Select(x => new ProductInstance
         {
-            NetQuantity = x.Quantity,
             Quantity = x.Quantity,
             Product = product,
             ProductSizeId = x.SizeId

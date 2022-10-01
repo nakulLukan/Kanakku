@@ -37,10 +37,10 @@
         <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
         <MudTd DataLabel="Name">@context.Name</MudTd>
         <MudTd DataLabel="Employee Code">@context.EmpCode</MudTd>
-        <MudTd DataLabel="DOB">@context.DateOfBirth</MudTd>
+        <MudTd DataLabel="DOB">@context.DateOfBirth?.ToString(AppSetting.DATE_FORMAT)</MudTd>
         <MudTd DataLabel="Address">@context.AddressLineOne</MudTd>
         <MudTd DataLabel="Contact Number">@context.PhoneNumber1</MudTd>
-        <MudTd DataLabel="Date of Joining">@context.DateOfJoining</MudTd>
+        <MudTd DataLabel="Date of Joining">@context.DateOfJoining?.ToString(AppSetting.DATE_FORMAT)</MudTd>
         <MudTd DataLabel="Action">
             <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))"> view details</MudButton>
         </MudTd>

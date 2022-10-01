@@ -26,6 +26,8 @@ namespace Kanakku.Application.Requests.DailyOperation
         {
             var product = await appDbContext.Products.AsTracking()
                 .Include(x => x.ProductInstances)
+                    .ThenInclude(x => x.ProductWorkInstances)
+                .Include(x => x.ProductInstances)
                     .ThenInclude(x => x.ProductSize)
                 .FirstAsync(x => x.Id == request.ProductId, cancellationToken);
             List<WorkHistory> works = new List<WorkHistory>();
@@ -37,9 +39,10 @@ namespace Kanakku.Application.Requests.DailyOperation
             foreach (var variant in request.VariantsPerOperation.Where(x => x.IsChecked).ToArray())
             {
                 var prodVar = product.ProductInstances.First(x => x.Id == variant.OperationInstanceId);
-                if (prodVar.NetQuantity < variant.Quantity)
+                var workInstance = prodVar.ProductWorkInstances.First(x => x.WorkId == request.OperationId.Value);
+                if (workInstance.NetQuantity < variant.Quantity)
                 {
-                    throw new AppException($"Quantity for size '{prodVar.ProductSize.Size}' cannot be greater than {prodVar.NetQuantity}.");
+                    throw new AppException($"Quantity for size '{prodVar.ProductSize.Size}' cannot be greater than {workInstance.NetQuantity}.");
                 }
 
                 works.Add(new()
@@ -54,7 +57,7 @@ namespace Kanakku.Application.Requests.DailyOperation
                     ModifiedBy = userId,
                     Quantity = variant.Quantity,
                 });
-                prodVar.NetQuantity -= variant.Quantity;
+                workInstance.NetQuantity -= variant.Quantity;
             }
 
             await appDbContext.WorkHistories.AddRangeAsync(works);

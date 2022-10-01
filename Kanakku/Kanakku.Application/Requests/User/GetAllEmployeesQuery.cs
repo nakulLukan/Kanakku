@@ -1,5 +1,6 @@
 ﻿using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.User;
+using Kanakku.Shared.Extensions;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
@@ -54,7 +55,12 @@ public class GetAllEmployeesQueryHandler : IRequestHandler<GetAllEmployeesQuery,
                      .ToListAsync(cancellationToken);
 
         int rowNum = 1;
-        result.ForEach(x => x.RowNumber = rowNum++);
+        result.ForEach(x =>
+        {
+            x.RowNumber = rowNum++;
+            x.DateOfJoining = x.DateOfJoining.ToDateTimeKind().Value.ToLocalTime();
+            x.DateOfBirth = x.DateOfBirth.ToDateTimeKind().Value.ToLocalTime();
+        });
         return result;
     }
 }

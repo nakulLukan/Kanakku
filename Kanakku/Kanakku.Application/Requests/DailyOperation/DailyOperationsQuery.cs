@@ -83,7 +83,8 @@ namespace Kanakku.Application.Requests.DailyOperation
                     VariantQty = x.Quantity,
                     WorkedOn = x.WorkedOn,
                     WorkedBy = x.Employee.Name,
-                    TotalAmount = x.Quantity * x.Work.Cost
+                    TotalAmount = x.Quantity * x.Work.Cost,
+                    VarianPrice = x.Work.Cost
                 })
                 .ToArrayAsync(cancellationToken);
         }

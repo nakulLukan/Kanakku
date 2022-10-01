@@ -9,6 +9,7 @@
         public string Operation { get; set; }
         public string Variant { get; set; }
         public int VariantQty { get; set; }
+        public float VarianPrice { get; set; }
         public float TotalAmount { get; set; }
     }
 }

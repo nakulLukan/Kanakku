@@ -21,16 +21,20 @@ namespace Kanakku.Application.Requests.Product
         public async Task<ProductMappingDto[]> Handle(ProductMappingQuery request, CancellationToken cancellationToken)
         {
             return await appDbContext.Products.Where(x => x.IsActive)
+                .OrderBy(x=>x.ShortCode)
                 .Select(x => new ProductMappingDto
                 {
                     ProductId = x.Id,
                     ProductName = $"{x.ShortCode} - {x.Name}",
-                    Variants = x.ProductInstances.Select(y => new VariantMappingDto
-                    {
-                        VariantId = y.Id,
-                        SizeName = y.ProductSize.Size
-                    }).ToArray(),
-                    Operations = x.Works.Select(y => new OperationMappingDto
+                    Variants = x.ProductInstances
+                        .OrderBy(x => x.ProductSize.Master.Order)
+                        .ThenBy(x => x.ProductSize.Order)
+                        .Select(y => new VariantMappingDto
+                        {
+                            VariantId = y.Id,
+                            SizeName = y.ProductSize.Size
+                        }).ToArray(),
+                    Operations = x.Works.OrderBy(x => x.Name).Select(y => new OperationMappingDto
                     {
                         OperationId = y.Id,
                         OperationName = y.Name

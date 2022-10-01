@@ -16,4 +16,5 @@ public class Work : DomainBase
     public BinaryResource Image { get; set; }
     public List<WorkCostHistory> WorkCostHistories { get; set; }
     public List<WorkHistory> WorkHistories { get; set; }
+    public List<ProductWorkInstance> ProductWorkInstances { get; set; }
 }

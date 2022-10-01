@@ -69,7 +69,8 @@
                   Dense="true" RowsPerPage="10"
                   Bordered="true" Hover="true" Striped="true"
                   Loading="isDataLoading"
-                  CustomFooter="true">
+                  CustomFooter="true" 
+                  Virtualize="true">
             <ToolBarContent>
                 <div class="d-flex flex-row justify-space-between w-100">
                     <MudText Typo="Typo.h6">Operations </MudText>
@@ -91,6 +92,7 @@
                 <MudTh>Operation</MudTh>
                 <MudTh>Size</MudTh>
                 <MudTh>Qty</MudTh>
+                <MudTh>Price</MudTh>
                 <MudTh>Amt</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -100,6 +102,7 @@
                 <MudTd DataLabel="Operation">@context.Operation</MudTd>
                 <MudTd DataLabel="Size">@context.Variant</MudTd>
                 <MudTd DataLabel="Qty">@context.VariantQty</MudTd>
+                <MudTd DataLabel="Price">@context.VarianPrice.ToCurrency()</MudTd>
                 <MudTd DataLabel="Amt">@context.TotalAmount.ToCurrency()</MudTd>
             </RowTemplate>
             <FooterContent>
@@ -134,12 +137,10 @@
                         </TitleContent>
                         <ChildContent>
                             <MudRadioGroup @bind-SelectedOption="@filter.QuickFilter">
-                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.ThisMonth" Color="Color.Primary">This Month</MudRadio>
-                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.ThisWeek" Color="Color.Primary">This Week</MudRadio>
-                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.Today" Color="Color.Primary">Today</MudRadio>
-                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.LastMonth" Color="Color.Primary">Last Month</MudRadio>
-                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.LastWeek" Color="Color.Primary">Last Week</MudRadio>
-                                <MudRadio Dense="true" T="DateFilter?" Option="@DateFilter.Yesterday" Color="Color.Primary">Yesterday</MudRadio>
+                                <MudRadio Dense="false" T="DateFilter?" Option="@DateFilter.ThisMonth" Color="Color.Primary">This Month</MudRadio>
+                                <MudRadio Dense="false" T="DateFilter?" Option="@DateFilter.Today" Color="Color.Primary">Today</MudRadio>
+                                <MudRadio Dense="false" T="DateFilter?" Option="@DateFilter.LastMonth" Color="Color.Primary">Last Month</MudRadio>
+                                <MudRadio Dense="false" T="DateFilter?" Option="@DateFilter.Yesterday" Color="Color.Primary">Yesterday</MudRadio>
                             </MudRadioGroup>
                             <MudGrid>
                                 <MudItem xs="12" md="6">
