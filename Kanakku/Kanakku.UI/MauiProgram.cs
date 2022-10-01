@@ -38,7 +38,7 @@ public static class MauiProgram
 
 #endif
 
-            builder.Services.Register();
+            builder.Services.Register(configuration);
             builder.Services.RegisterInfrastructure();
 
             Task.Run(() =>

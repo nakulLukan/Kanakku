@@ -1,11 +1,14 @@
 ﻿@using Kanakku.Application.Requests.User
+@using Kanakku.Shared.Utilities
 @using Kanakku.UI.Contracts.Event
+@using Kanakku.UI.Contracts.StaticApi
+@using Serilog
 @inherits LayoutComponentBase
 @inject IAppMediator AppMediator;
 @inject NavigationManager NavigationManager
 @inject Kanakku.Application.Contracts.Storage.IAppSecureStorage AppSecureStorage
 @inject NavigationManager NavigationManager;
-
+@inject IGeneral GeneralApi
 <MudThemeProvider />
 <MudDialogProvider FullWidth="true"
                    MaxWidth="MaxWidth.ExtraSmall"
@@ -53,8 +56,11 @@
             NavigationManager.NavigateTo("login");
         });
     }
+
     protected override async Task OnInitializedAsync()
     {
+        if (!await AuthorizeApp()) return;
+
         AppInMemoryStore.IsLoggedIn = await AppSecureStorage.GetAsync<bool>(SecureStorageKey.IS_LOGGED);
         if (!AppInMemoryStore.IsLoggedIn)
         {
@@ -66,6 +72,26 @@
             AppInMemoryStore.Username = await AppSecureStorage.GetAsync<string>(SecureStorageKey.USERNAME);
             welcomText = $"Hi, {AppInMemoryStore.Username}";
             AppInMemoryStore.UserId = await AppSecureStorage.GetAsync<Guid>(SecureStorageKey.USER_ID);
+        }
+    }
+
+    async Task<bool> AuthorizeApp()
+    {
+        try
+        {
+            var authInfo = await GeneralApi.GetAuthenticationInfo();
+            if (!authInfo.CanUseApplication)
+            {
+                throw new AppException("Application not enabled to use.");
+            }
+
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.Logger.Error("Failed to authenticate app.\nMessage: {message}\nStack Trace: {stack}", e.Message, e.StackTrace);
+            NavigationManager.NavigateTo("unauthorized");
+            return false;
         }
     }
 }
