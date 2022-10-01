@@ -77,21 +77,24 @@
 
     async Task<bool> AuthorizeApp()
     {
-        try
-        {
-            var authInfo = await GeneralApi.GetAuthenticationInfo();
-            if (!authInfo.CanUseApplication)
-            {
-                throw new AppException("Application not enabled to use.");
-            }
+#if Release
+    try
+    {
+    var authInfo = await GeneralApi.GetAuthenticationInfo();
+    if (!authInfo.CanUseApplication)
+    {
+    throw new AppException("Application not enabled to use.");
+    }
 
-            return true;
-        }
-        catch (Exception e)
-        {
-            Log.Logger.Error("Failed to authenticate app.\nMessage: {message}\nStack Trace: {stack}", e.Message, e.StackTrace);
-            NavigationManager.NavigateTo("unauthorized");
-            return false;
-        }
+    return true;
+    }
+    catch (Exception e)
+    {
+    Log.Logger.Error("Failed to authenticate app.\nMessage: {message}\nStack Trace: {stack}", e.Message, e.StackTrace);
+    NavigationManager.NavigateTo("unauthorized");
+    return false;
+    }
+#endif
+        return await Task.FromResult(true);
     }
 }
