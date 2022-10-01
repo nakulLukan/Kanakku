@@ -19,7 +19,7 @@ jobs:
         dotnet-version: 6.0.x
     
     - name: Release
-      run: dotnet publish .\Kanakku\Kanakku.StaticApi\Kanakku.StaticApi.csproj -c Release -o release/static-api
+      run: dotnet publish Kanakku/Kanakku.StaticApi/Kanakku.StaticApi.csproj -c Release -o release/static-api --nologo
     
     - name: Commit wwwroot to GitHub Pages
       uses: JamesIves/github-pages-deploy-action@3.7.1
