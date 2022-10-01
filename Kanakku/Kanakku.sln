@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.Application", "Kana
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.Domain", "Kanakku.Domain\Kanakku.Domain.csproj", "{87C788AE-162A-4793-A9ED-F1CAF237BF2C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Kanakku.StaticApi", "Kanakku.StaticApi\Kanakku.StaticApi.csproj", "{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,6 +42,10 @@ Global
 		{87C788AE-162A-4793-A9ED-F1CAF237BF2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87C788AE-162A-4793-A9ED-F1CAF237BF2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87C788AE-162A-4793-A9ED-F1CAF237BF2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
