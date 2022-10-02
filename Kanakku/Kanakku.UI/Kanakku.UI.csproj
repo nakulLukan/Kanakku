@@ -93,4 +93,8 @@
     <ProjectReference Include="..\Kanakku.Infrastructure\Kanakku.Infrastructure.csproj" />
     <ProjectReference Include="..\Kanakku.Shared\Kanakku.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Impl\Navigation\" />
+  </ItemGroup>
 </Project>

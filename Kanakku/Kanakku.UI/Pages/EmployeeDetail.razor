@@ -7,9 +7,9 @@
 @using Kanakku.Application.Requests.Lookup
 @using Kanakku.Application.Requests.User
 @using Kanakku.Shared.Extensions
+@using Kanakku.UI.Components
 @using Kanakku.UI.Contracts.Event
 @using MediatR
-@inject NavigationManager NavigationManager
 @inject IAppMediator AppMediator;
 @inject MediatR.IMediator Mediator;
 @inject IToastService ToastService
@@ -17,6 +17,7 @@
 @inject NavigationManager NavigationManager
 @inject IDialogService DialogService
 
+<Back Href="manage-employees" />
 @if (!isNewEmployee)
 {
     <MudGrid>
@@ -84,6 +85,16 @@
                                     <td><b>@(employee.DateOfJoining?.ToString(AppSetting.DATE_FORMAT))</b></td>
                                 </tr>
                                 <tr>
+                                    <td>Work Status</td>
+                                    <td>:</td>
+                                    <td>
+                                        <b>
+                                            @(employee.RegsignedOn.HasValue && employee.RegsignedOn.Value.Date < DateTime.Now.Date
+                                                ? $"Resigned on {employee.RegsignedOn?.ToString(AppSetting.DATE_FORMAT)}" : "Working")
+                                        </b>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td>EPF Registration Number</td>
                                     <td>:</td>
                                     <td><b>@employee.EpfRegNo</b></td>
@@ -101,16 +112,23 @@
         </MudItem>
         <MudItem xs="12" md="5">
             <MudGrid Spacing="3">
-                <MudItem xs="12" >
+                <MudItem xs="12">
                     <MudPaper Class="p-4 text-center">
-                    <MudImage Src="@employeeDp" ObjectFit="ObjectFit.Contain" Class="rounded-lg product-dp" Elevation="0"/>
+                        <MudImage Src="@employeeDp" ObjectFit="ObjectFit.Contain" Class="rounded-lg product-dp" Elevation="0" />
                     </MudPaper>
                 </MudItem>
                 <MudItem xs="12">
-                    <MudPaper Class="p-4">
-                        <MudText>Choose date of resignation</MudText>
-                        <MudDatePicker Variant="Variant.Filled" Color="Color.Primary" Label="Date of Resignation" DateChanged="OnRegsignationDateChanged"></MudDatePicker>
-                    </MudPaper>
+                    @if (employee != null && employee.Id != Guid.Empty && !employee.RegsignedOn.HasValue)
+                    {
+                        <MudPaper Class="p-4">
+                            <MudText Typo="Typo.subtitle2">Choose date of resignation</MudText>
+                            <MudDatePicker Variant="Variant.Filled"
+                                   Color="Color.Primary"
+                                   Label="Date of Resignation"
+                                   DateChanged="OnRegsignationDateChanged"
+                                   @ref="resignationDate"></MudDatePicker>
+                        </MudPaper>
+                    }
                 </MudItem>
             </MudGrid>
         </MudItem>
@@ -261,6 +279,7 @@
                                    AllowKeyboardInput=true
                                    MaxDate="DateTime.UtcNow"
                                    Editable=true
+                                   TransformOrigin="Origin.CenterLeft"
                                    Label="DOB"
                                    Class="flex-grow-1" />
                     <MudTextField @bind-Value="editEmployee.Email"
@@ -318,6 +337,7 @@
                                   FullWidth=true />
                     <MudDatePicker @bind-Date="editEmployee.DateOfJoining"
                                    For="@(() => editEmployee.DateOfJoining)"
+                                   TransformOrigin="Origin.CenterLeft"
                                    AllowKeyboardInput=true
                                    MaxDate="DateTime.UtcNow"
                                    Editable=true
@@ -367,7 +387,7 @@
     EmployeeDtoValidator employeeValidator { get; set; } = new();
     bool isCreateEmpoyeeModalVisible = false;
 
-    string employeeDp;
+    string employeeDp = DirectoryConstant.DFAULT_IMAGE_PLACEHOLDER;
     string idProof;
 
     MudForm editEmpForm;
@@ -375,6 +395,7 @@
     EmployeeDto resetEmployee { get; set; }
     bool isEditEmpoyeeModalVisible = false;
 
+    MudDatePicker resignationDate;
 
     protected override void OnInitialized()
     {
@@ -514,15 +535,40 @@
 
     async Task OnRegsignationDateChanged(DateTime? datetime)
     {
+        if (!datetime.HasValue)
+        {
+            return;
+        }
+
         bool? result = await DialogService.ShowMessageBox(
             "Confirm",
-            $"Are you sure you want to set the resignation date to {datetime?.ToShortDateString()}",
-            yesText: "Confirm", cancelText: "Cancel", options: new DialogOptions(){
-NoHeader = false
-            });
+            $"Are you sure you want to set the resignation date to {datetime?.ToString(AppSetting.DATE_FORMAT)}.",
+            yesText: "Confirm", cancelText: "Cancel", options: new DialogOptions()
+                {
+                    NoHeader = false,
+                    MaxWidth = MaxWidth.ExtraSmall
+                });
         if (result.HasValue && result.Value)
         {
-
+            employee.RegsignedOn = datetime;
+            await AppMediator.Send(new EmployeeResignCommand
+                {
+                    EmpId = employee.Id,
+                    ResignOn = datetime
+                })
+                .OnSuccess(async data =>
+                {
+                    ToastService.Success("Date of Resignation for the employee updated successfully.");
+                    await InvokeAsync(StateHasChanged);
+                })
+                .OnError(err =>
+                {
+                    ToastService.Error(err.Message);
+                });
+        }
+        else
+        {
+            resignationDate.Clear();
         }
         StateHasChanged();
     }

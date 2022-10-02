@@ -41,7 +41,8 @@ public class AppDbContext : DbContext, IAppDbContext
         var connectionString = configuration is not null ? configuration["ConnectionStrings:DbConnection"]
             : "Host=localhost;Username=nakul;Password=password;Database=kanakku";
         optionsBuilder.UseNpgsql(connectionString)
-            .UseSnakeCaseNamingConvention();
+            .UseSnakeCaseNamingConvention()
+            .LogTo(Serilog.Log.Logger.Information);
         base.OnConfiguring(optionsBuilder);
     }
 

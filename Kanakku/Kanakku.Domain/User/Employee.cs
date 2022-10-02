@@ -11,6 +11,7 @@ public class Employee : DomainBase
     public int Code { get; set; }
     public DateTime DateOfBirth { get; set; }
     public DateTime DateOfJoining { get; set; }
+    public DateTime? ResignedOn { get; set; }
     public string Email { get; set; }
     public string PhoneNumber1 { get; set; }
     public string PhoneNumber2 { get; set; }

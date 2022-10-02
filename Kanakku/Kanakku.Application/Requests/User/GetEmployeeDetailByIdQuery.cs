@@ -49,10 +49,12 @@ namespace Kanakku.Application.Requests.User
                               IdProofImageId = emp.IdProofImageId,
                               PhoneNumber2 = emp.PhoneNumber2,
                               DateOfJoining = emp.DateOfJoining,
+                              RegsignedOn = emp.ResignedOn
                           })
                           .FirstAsync(x => x.Id == request.EmpId, cancellationToken);
             result.DateOfBirth = result.DateOfBirth.ToDateTimeKind().Value.ToLocalTime();
             result.DateOfJoining = result.DateOfJoining.ToDateTimeKind().Value.ToLocalTime();
+            result.RegsignedOn = result.RegsignedOn.ToDateTimeKind()?.ToLocalTime();
             return result;
         }
     }

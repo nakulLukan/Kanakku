@@ -14,7 +14,6 @@ using Kanakku.UI.Impl.Event;
 using Kanakku.UI.Impl.Presentation;
 using Kanakku.UI.Impl.Storage;
 using MediatR;
-using Microsoft.Extensions.DependencyInjection;
 using Refit;
 
 namespace Kanakku.UI;

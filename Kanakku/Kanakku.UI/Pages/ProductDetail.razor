@@ -14,7 +14,7 @@
 @inject IAppMediator AppMediator
 @inject NavigationManager NavigationManager;
 
-
+<Back Href="manage-products"/>
 @if (ProductId != 0)
 {
     <MudGrid>
@@ -25,7 +25,7 @@
                       T="WorkDto" Dense="true">
                     <ToolBarContent>
                         <div class="d-flex flex-row justify-space-between w-100">
-                            <MudText Typo="Typo.h6">@productDetails.Name</MudText>
+                            <h5 >@productDetails.Name</h5>
                             <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> addOperationDialogVisible = true)">Add Operation</MudButton>
                         </div>
                     </ToolBarContent>

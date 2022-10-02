@@ -13,6 +13,7 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.User
             builder.Property(x => x.Code).IsRequired(true);
             builder.Property(x => x.DateOfBirth).IsRequired(true);
             builder.Property(x => x.DateOfJoining).IsRequired(true);
+            builder.Property(x => x.ResignedOn).IsRequired(false);
             builder.Property(x => x.PhoneNumber1).IsRequired(true);
             builder.Property(x => x.PhoneNumber2).IsRequired(false);
             builder.Property(x => x.Name).IsRequired().HasMaxLength(255);

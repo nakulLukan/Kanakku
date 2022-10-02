@@ -13,6 +13,7 @@ public class EmployeeDto
     public string Email { get; set; }
     public DateTime? DateOfBirth { get; set; }
     public DateTime? DateOfJoining { get; set; }
+    public DateTime? RegsignedOn { get; set; }
     public string PhoneNumber1 { get; set; }
     public string PhoneNumber2 { get; set; }
     public int? DistrictId { get; set; }

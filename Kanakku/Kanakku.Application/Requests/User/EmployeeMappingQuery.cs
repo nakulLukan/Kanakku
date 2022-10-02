@@ -8,6 +8,7 @@ namespace Kanakku.Application.Requests.User
     public class EmployeeMappingQuery : IRequest<EmployeeMappingDto[]>
     {
     }
+
     public class EmployeeMappingQueryHandler : IRequestHandler<EmployeeMappingQuery, EmployeeMappingDto[]>
     {
         readonly IAppDbContext _appDbContext;
@@ -19,7 +20,9 @@ namespace Kanakku.Application.Requests.User
 
         public async Task<EmployeeMappingDto[]> Handle(EmployeeMappingQuery request, CancellationToken cancellationToken)
         {
+            DateTime today = DateTime.UtcNow;
             return await _appDbContext.Employees.OrderBy(x => x.Code)
+                .Where(x => !x.ResignedOn.HasValue || x.ResignedOn.Value > today)
                 .Select(x => new EmployeeMappingDto
                 {
                     EmployeeId = x.Id,
