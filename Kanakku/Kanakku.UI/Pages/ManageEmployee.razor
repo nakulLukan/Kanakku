@@ -31,6 +31,7 @@
         <MudTh>Address</MudTh>
         <MudTh>Contact Number</MudTh>
         <MudTh>Date of Joining</MudTh>
+        <MudTh>Working Status</MudTh>
         <MudTh>Action</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -41,6 +42,7 @@
         <MudTd DataLabel="Address">@context.AddressLineOne</MudTd>
         <MudTd DataLabel="Contact Number">@context.PhoneNumber1</MudTd>
         <MudTd DataLabel="Date of Joining">@context.DateOfJoining?.ToString(AppSetting.DATE_FORMAT)</MudTd>
+        <MudTd DataLabel="Working Status">@(context.RegsignedOn.HasValue && context.RegsignedOn.Value.Date <= DateTime.Now.Date ? "Resigned" : "Working")</MudTd>
         <MudTd DataLabel="Action">
             <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))"> view details</MudButton>
         </MudTd>

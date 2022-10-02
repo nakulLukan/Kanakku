@@ -37,6 +37,7 @@ public static class ServiceRegistry
             cfg.CreateMap<EmployeeDto, CreateEmployeeCommand>();
             cfg.CreateMap<EmployeeDto, EditEmployeeCommand>();
             cfg.CreateMap<DailyOperationDto, SubmitDailyOperationCommand>();
+            cfg.CreateMap<EmployeeRegistryEntryDto, EmployeeRegistryEntryCommand>();
         });
 
         serviceCollection.AddSingleton(autoMapperConfiguration.CreateMapper());

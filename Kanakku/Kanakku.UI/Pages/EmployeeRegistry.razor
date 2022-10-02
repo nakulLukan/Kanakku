@@ -1,0 +1,104 @@
+﻿@page "/employee-registry"
+@using AutoMapper
+@using Kanakku.Application.Models.DailyOperation
+@using Kanakku.Application.Models.User
+@using Kanakku.Application.Requests.User
+@using Kanakku.UI.Contracts.Event
+@using MediatR
+@using Kanakku.UI.Components
+@inject IMediator Mediator;
+@inject IAppMediator AppMediator;
+@inject IMapper Mapper
+
+<h5 class="mb-5">Salary History</h5>
+
+<MudGrid Justify="Justify.FlexStart">
+    <MudItem xs="12" sm="3">
+        <MudForm Model="employeeRegistry" ValidationDelay="1"
+                 @ref="employeeRegistryForm" Validation="employeeRegistryValidator.ValidateValue"
+                 Class="bg-white p-4">
+            <MudStack>
+                <SearchableSelect T="Guid?" @bind-SelectedItem="employeeRegistry.EmployeeId" Label="Employee"
+                                  Values="employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
+                                  For="@(() => employeeRegistry.EmployeeId)" />
+                <MudDatePicker @bind-Date="@employeeRegistry.SalaryPeriod"
+                               For="@(() => employeeRegistry.SalaryPeriod)"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined"
+                               Label="Month/Year"
+                               FixDay="1"
+                               DateFormat="MMM/yyyy"
+                               OpenTo="OpenTo.Month"
+                               MaxDate="DateTime.Now"/>
+                <MudNumericField @bind-Value="@employeeRegistry.NumberOfDaysPresent"
+                                 For="@(() => employeeRegistry.NumberOfDaysPresent)"
+                                 Variant="Variant.Outlined"
+                                 Label="Number of days present"
+                                 Margin="Margin.Dense"
+                                 T="int"
+                                 Min="0" />
+                <MudNumericField @bind-Value="@employeeRegistry.SalaryPerPeriod"
+                                 For="@(() => employeeRegistry.SalaryPerPeriod)"
+                                 Label="Salary"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 T="float"
+                                 Min="0" />
+
+                <MudStack Row=true Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudButton Color="Color.Transparent" OnClick="OnReset">Reset</MudButton>
+                    </div>
+                    <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="AddEntry">Submit</MudButton>
+                </MudStack>
+            </MudStack>
+        </MudForm>
+    </MudItem>
+    <MudItem sm="9" xs="12">
+    </MudItem>
+</MudGrid>
+
+@code {
+    EmployeeRegistryEntryDto employeeRegistry = new();
+    EmployeeRegistryEntryDto employeeRegistryReset = new();
+    EmployeeRegistryEntryDtoValidator employeeRegistryValidator = new();
+    MudForm employeeRegistryForm;
+
+    EmployeeMappingDto[] employees = new EmployeeMappingDto[0];
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await Mediator.Send(new EmployeeMappingQuery());
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+        }
+    }
+
+    async Task AddEntry()
+    {
+        await employeeRegistryForm.Validate();
+        if (!employeeRegistryForm.IsValid)
+        {
+            return;
+        }
+        await AppMediator.Send(Mapper.Map(employeeRegistry, new EmployeeRegistryEntryCommand()))
+        .OnSuccess(async data =>
+        {
+            ToastService.Success("Entry added successfully");
+            OnReset();
+            await InvokeAsync(StateHasChanged);
+        })
+        .OnError(err =>
+        {
+            ToastService.Error(err.Message);
+        });
+    }
+
+    void OnReset()
+    {
+        employeeRegistry = employeeRegistryReset.Clone();
+    }
+}

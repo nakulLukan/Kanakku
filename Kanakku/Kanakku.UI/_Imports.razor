@@ -1,4 +1,5 @@
 ﻿@using System.Net.Http
+@using Kanakku.Application.Contracts.Presentation
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.AspNetCore.Components.Web
@@ -9,3 +10,6 @@
 @using Kanakku.UI.Extensions;
 @using MudBlazor;
 @using Kanakku.Shared;
+
+
+@inject IToastService ToastService;

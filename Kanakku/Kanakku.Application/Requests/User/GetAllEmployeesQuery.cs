@@ -51,6 +51,7 @@ public class GetAllEmployeesQueryHandler : IRequestHandler<GetAllEmployeesQuery,
                          IdProofImageId = emp.IdProofImageId,
                          PhoneNumber2 = emp.PhoneNumber2,
                          DateOfJoining = emp.DateOfJoining,
+                         RegsignedOn = emp.ResignedOn
                      })
                      .ToListAsync(cancellationToken);
 
@@ -60,6 +61,7 @@ public class GetAllEmployeesQueryHandler : IRequestHandler<GetAllEmployeesQuery,
             x.RowNumber = rowNum++;
             x.DateOfJoining = x.DateOfJoining.ToDateTimeKind().Value.ToLocalTime();
             x.DateOfBirth = x.DateOfBirth.ToDateTimeKind().Value.ToLocalTime();
+            x.RegsignedOn = x.RegsignedOn.ToDateTimeKind()?.ToLocalTime();
         });
         return result;
     }

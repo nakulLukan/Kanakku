@@ -35,6 +35,8 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<Employee> Employees { get; set; }
     public DbSet<ProductSize> ProductSizes { get; set; }
     public DbSet<ProductInstance> ProductInstances { get; set; }
+    public DbSet<ProductWorkInstance> ProductWorkInstances { get; set; }
+    public DbSet<EmployeeSalaryHistory> EmployeeSalaryHistories { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
