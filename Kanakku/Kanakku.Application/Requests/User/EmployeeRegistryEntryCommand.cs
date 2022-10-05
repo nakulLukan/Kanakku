@@ -25,7 +25,8 @@ namespace Kanakku.Application.Requests.User
 
         public async Task<int> Handle(EmployeeRegistryEntryCommand request, CancellationToken cancellationToken)
         {
-            request.SalaryPeriod = request.SalaryPeriod?.ToDateTimeKind();
+            var daysToSub = (1 - request.SalaryPeriod.Value.Date.Day);
+            request.SalaryPeriod = request.SalaryPeriod?.Date.AddDays(daysToSub).ToDateTimeKind();
             var entryExists = await dbContext.EmployeeSalaryHistories
                 .AnyAsync(x => x.EmpId == request.EmployeeId.Value
                     && x.Period == request.SalaryPeriod, cancellationToken);
@@ -33,6 +34,12 @@ namespace Kanakku.Application.Requests.User
             if (entryExists)
             {
                 throw new AppException($"Record for the month '{(request.SalaryPeriod?.ToString("MMMM"))}' already exists.");
+            }
+
+            var maxDaysInMonth = DateTime.DaysInMonth(request.SalaryPeriod.Value.Year, request.SalaryPeriod.Value.Month);
+            if (DateTime.DaysInMonth(request.SalaryPeriod.Value.Year, request.SalaryPeriod.Value.Month) < request.NumberOfDaysPresent)
+            {
+                throw new AppException($"Number of days present should be less than or equal to '{maxDaysInMonth}' for the month '{request.SalaryPeriod.Value.ToString("MMMM")}'");
             }
             var userId = await sessionContext.GetUserId();
             var entry = new EmployeeSalaryHistory

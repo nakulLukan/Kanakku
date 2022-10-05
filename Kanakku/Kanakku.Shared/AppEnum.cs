@@ -26,3 +26,9 @@ public enum DateFilter: short
     LastWeek,
     Yesterday
 }
+
+public enum EmployeeSalaryDateFilter : short
+{
+    ThisMonth = 1,
+    ThisYear,
+}

@@ -9,6 +9,7 @@
 @inject IMediator Mediator;
 @inject IAppMediator AppMediator;
 @inject IMapper Mapper
+@using Kanakku.Shared.Extensions
 
 <h5 class="mb-5">Salary History</h5>
 
@@ -29,7 +30,7 @@
                                FixDay="1"
                                DateFormat="MMM/yyyy"
                                OpenTo="OpenTo.Month"
-                               MaxDate="DateTime.Now"/>
+                               MaxDate="DateTime.Now" />
                 <MudNumericField @bind-Value="@employeeRegistry.NumberOfDaysPresent"
                                  For="@(() => employeeRegistry.NumberOfDaysPresent)"
                                  Variant="Variant.Outlined"
@@ -55,9 +56,124 @@
         </MudForm>
     </MudItem>
     <MudItem sm="9" xs="12">
+        <MudTable Items="@registry" FixedHeader="true"
+                  Dense="true" RowsPerPage="10"
+                  Bordered="true" Hover="true" Striped="true"
+                  Loading="isDataLoading"
+                  CustomFooter="true"
+                  Virtualize="true">
+            <ToolBarContent>
+                <div class="d-flex flex-row justify-space-between w-100">
+                    <MudText Typo="Typo.h6">Salary History</MudText>
+                    <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
+                              Visible="@(filter.DateFilter.HasValue
+                                || filter.From.HasValue
+                                || filter.To.HasValue
+                                || (filter.Employees!=null && filter.Employees.Any()))">
+                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
+                                       Color="Color.Tertiary" Variant="Variant.Filled"
+                                       OnClick="(()=> showFilterWindow = true)"></MudIconButton>
+                    </MudBadge>
+                </div>
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Employee Name</MudTh>
+                <MudTh>Employee Code</MudTh>
+                <MudTh>Period</MudTh>
+                <MudTh>Present Days</MudTh>
+                <MudTh>Salary</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Employee Name">@context.EmpName</MudTd>
+                <MudTd DataLabel="Employee Code">@context.EmpCode</MudTd>
+                <MudTd DataLabel="Period">@context.SalaryMonth.ToString("MMM/yyyy")</MudTd>
+                <MudTd DataLabel="Present Days">@context.DaysPresent</MudTd>
+                <MudTd DataLabel="Salary">@context.Salary.ToCurrency()</MudTd>
+            </RowTemplate>
+            <FooterContent>
+                <MudTFootRow>
+                    <MudTd colspan="7">
+                        <div class="d-flex flex-row-reverse">
+                            <MudText>Total Salary: <b>@registry.Sum(x=>x.Salary).ToCurrency()</b></MudText>
+                        </div>
+                    </MudTd>
+                </MudTFootRow>
+            </FooterContent>
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+        </MudTable>
     </MudItem>
 </MudGrid>
 
+
+<MudDialog IsVisible="showFilterWindow" Options="AppUIConstant.NormalDialogOption">
+    <TitleContent>
+        <MudText Typo="Typo.h6">Configure filter conditions</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudGrid Spacing="3">
+            <MudItem xs="12">
+                <MudExpansionPanels>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudBadge Icon="@Icons.Material.Rounded.FilterAlt" Color="Color.Success" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.DateFilter.HasValue
+                                || filter.From.HasValue
+                                || filter.To.HasValue)">
+                                <MudText Typo="Typo.subtitle2">Filter by 'Period'</MudText>
+                            </MudBadge>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudRadioGroup @bind-SelectedOption="@filter.DateFilter">
+                                <MudRadio Dense="false" T="EmployeeSalaryDateFilter?" Option="@EmployeeSalaryDateFilter.ThisMonth" Color="Color.Primary">This Month</MudRadio>
+                                <MudRadio Dense="false" T="EmployeeSalaryDateFilter?" Option="@EmployeeSalaryDateFilter.ThisYear" Color="Color.Primary">This Year</MudRadio>
+                            </MudRadioGroup>
+                            <MudGrid>
+                                <MudItem xs="12" md="6">
+                                    <MudDatePicker @bind-Date="filter.From" Label="From" FixDay="1" OpenTo="OpenTo.Month"></MudDatePicker>
+                                </MudItem>
+                                <MudItem xs="12" md="6">
+                                    <MudDatePicker @bind-Date="filter.To" Label="To" FixDay="1" OpenTo="OpenTo.Month"></MudDatePicker>
+                                </MudItem>
+                            </MudGrid>
+                        </ChildContent>
+
+                    </MudExpansionPanel>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudBadge Icon="@Icons.Material.Rounded.FilterAlt" Color="Color.Success" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.Employees != null && filter.Employees.Any())">
+                                <MudText Typo="Typo.subtitle2">Filter by 'Employee'</MudText>
+                            </MudBadge>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudSelect Dense="true" MultiSelection="true" HelperText="Worked By" T="Guid" Label="Worked By"
+                                       SelectAll="true"
+                                       @bind-SelectedValues="filter.Employees" MultiSelectionTextFunc="GetMultiSelectedEmployees">
+                                @foreach (var emp in employees)
+                                {
+                                    <MudSelectItem T="Guid" Value="@(emp.EmployeeId)">@emp.EmployeeName</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </ChildContent>
+
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudItem>
+            <MudItem xs="12">
+                <div class="d-flex flex-row justify-space-between">
+                    <div>
+                        <MudButton OnClick="(()=> showFilterWindow = false)" Variant="Variant.Outlined" Color="Color.Transparent">Close</MudButton>
+                        <MudButton OnClick="ResetFilterCondition" Variant="Variant.Outlined" Color="Color.Secondary">Clear Filter</MudButton>
+                    </div>
+                    <MudButton OnClick="FilterGridData" Variant="Variant.Filled" Color="Color.Success">Apply Filter</MudButton>
+                </div>
+            </MudItem>
+        </MudGrid>
+
+    </DialogContent>
+</MudDialog>
 @code {
     EmployeeRegistryEntryDto employeeRegistry = new();
     EmployeeRegistryEntryDto employeeRegistryReset = new();
@@ -65,6 +181,11 @@
     MudForm employeeRegistryForm;
 
     EmployeeMappingDto[] employees = new EmployeeMappingDto[0];
+
+    EmployeeRegistryDto[] registry = new EmployeeRegistryDto[0];
+    bool showFilterWindow = false;
+    bool isDataLoading = false;
+    EmployeeRegistryFilterDto filter = new();
     protected override async Task OnInitializedAsync()
     {
         employees = await Mediator.Send(new EmployeeMappingQuery());
@@ -74,7 +195,10 @@
     {
         if (firstRender)
         {
+            registry = await Mediator.Send(BuildFilterDto());
+            StateHasChanged();
         }
+
     }
 
     async Task AddEntry()
@@ -88,17 +212,62 @@
         .OnSuccess(async data =>
         {
             ToastService.Success("Entry added successfully");
-            OnReset();
-            await InvokeAsync(StateHasChanged);
+            registry = await Mediator.Send(BuildFilterDto());
+
+            await InvokeAsync(() =>
+            {
+                OnReset();
+                StateHasChanged();
+            });
         })
-        .OnError(err =>
-        {
-            ToastService.Error(err.Message);
-        });
+    .OnError(err =>
+    {
+        ToastService.Error(err.Message);
+    });
     }
 
     void OnReset()
     {
-        employeeRegistry = employeeRegistryReset.Clone();
+        employeeRegistry = new();
+        employeeRegistryForm.ResetValidation();
+    }
+
+
+    string GetMultiSelectedEmployees(List<string> selectedValues)
+    {
+        if (!selectedValues.Any())
+        {
+            return string.Empty;
+        }
+
+        return string.Join(", ", selectedValues.Select(x => employees.First(y => y.EmployeeId.ToString() == x).EmployeeName));
+    }
+
+    void ResetFilterCondition()
+    {
+        filter = new();
+    }
+
+
+    async Task FilterGridData()
+    {
+        showFilterWindow = false;
+
+        isDataLoading = true;
+        StateHasChanged();
+        registry = await Mediator.Send(BuildFilterDto());
+        isDataLoading = false;
+        StateHasChanged();
+    }
+
+    EmployeeRegistryQuery BuildFilterDto()
+    {
+        return new EmployeeRegistryQuery
+            {
+                DateFilter = filter.DateFilter,
+                Employees = filter.Employees,
+                From = filter.From,
+                To = filter.To
+            };
     }
 }
