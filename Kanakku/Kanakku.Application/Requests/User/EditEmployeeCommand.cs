@@ -73,6 +73,7 @@ public class EditEmployeeCommandHandler : IRequestHandler<EditEmployeeCommand, G
         employee.EsiRegNo = request.EsiRegNo;
         employee.DpImageId = request.DpImageId;
         employee.IdProofImageId = request.IdProofImageId;
+        employee.DesignationId = request.DesignationId.Value;
         await _dbContext.SaveAsync(cancellationToken);
 
         return employee.Id;

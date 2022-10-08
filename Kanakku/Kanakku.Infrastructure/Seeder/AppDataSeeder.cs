@@ -10,5 +10,6 @@ public static class AppDataSeeder
         LookupDetailSeeder.SeedData(modelBuilder);
         ProductSizeMasterSeeder.SeedData(modelBuilder);
         ProductSizeSeeder.SeedData(modelBuilder);
+        DesignationSeeder.SeedData(modelBuilder);
     }
 }

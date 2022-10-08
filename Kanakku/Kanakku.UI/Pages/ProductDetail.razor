@@ -40,7 +40,7 @@
                         <MudTd DataLabel="Operation">@context.WorkName</MudTd>
                         <MudTd DataLabel="Rate">@context.Rate.ToCurrency()</MudTd>
                         <MudTd DataLabel="Action">
-                            <MudButton Variant="MudBlazor.Variant.Text" Color="Color.Info" OnClick="(()=> OnOperationSelect(context))"> Edit Operation</MudButton>
+                            <MudButton Variant="MudBlazor.Variant.Text" Color="Color.Info" OnClick="(()=> OnOperationSelect(context))" Size="Size.Small"> Edit Operation</MudButton>
                         </MudTd>
                     </RowTemplate>
                     <FooterContent>

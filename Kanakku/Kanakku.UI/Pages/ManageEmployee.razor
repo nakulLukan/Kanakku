@@ -44,7 +44,7 @@
         <MudTd DataLabel="Date of Joining">@context.DateOfJoining?.ToString(AppSetting.DATE_FORMAT)</MudTd>
         <MudTd DataLabel="Working Status">@(context.RegsignedOn.HasValue && context.RegsignedOn.Value.Date <= DateTime.Now.Date ? "Resigned" : "Working")</MudTd>
         <MudTd DataLabel="Action">
-            <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))"> view details</MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))" Size="Size.Small"> view details</MudButton>
         </MudTd>
     </RowTemplate>
     <PagerContent>

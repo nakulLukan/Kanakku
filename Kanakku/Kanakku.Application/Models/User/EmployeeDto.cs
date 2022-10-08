@@ -26,6 +26,8 @@ public class EmployeeDto
     public string EsiRegNo { get; set; }
     public int? DpImageId { get; set; }
     public int? IdProofImageId { get; set; }
+    public int? DesignationId { get; set; }
+    public string Designation { get; set; }
 }
 
 public class EmployeeDtoValidator : AppAbstractValidator<EmployeeDto>
@@ -58,5 +60,7 @@ public class EmployeeDtoValidator : AppAbstractValidator<EmployeeDto>
         RuleFor(x => x.AddressLineOne)
             .NotEmpty()
             .MaximumLength(100);
+        RuleFor(x => x.DesignationId)
+            .NotEmpty();
     }
 }

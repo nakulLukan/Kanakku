@@ -11,64 +11,13 @@
 
 <MudGrid Spacing="3" Justify="Justify.FlexStart">
     <MudItem xs="12" md="4">
-        <MudText Typo="Typo.h6" GutterBottom="true">Product Sizes</MudText>
-        <MudPaper Width="100%">
-            <MudList Clickable="true">
-                @foreach (var group in Sizes.GroupBy(x => x.MasterName).ToArray())
-                {
-                    <MudListItem Text="@group.Key" Expanded="true"
-                             InitiallyExpanded="true">
-                        <NestedList>
-                            <MudItem Class="d-flex gap-3 mx-4 my-1">
-                                <MudTextField T="String" Variant="Variant.Filled" Label="Size"
-                                          @bind-Value="@sizeName" FullWidth="true"
-                                          Class="mt-0"></MudTextField>
-                                <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add"
-                                           Variant="MudBlazor.Variant.Filled" Color="Color.Primary"
-                                           OnClick="(async()=> await SaveProductSize(group.First().MasterId.Value))"></MudIconButton>
-                            </MudItem>
-
-                            @foreach (var size in group)
-                            {
-                                <MudListItem Text="@size.Value"></MudListItem>
-                            }
-                        </NestedList>
-                    </MudListItem>
-                }
-            </MudList>
-        </MudPaper>
+        <Kanakku.UI.Components.Master.SizeMaster/>
+    </MudItem>
+    <MudItem xs="12" md="4">
+        <Kanakku.UI.Components.Master.DesignationMaster/>
     </MudItem>
 </MudGrid>
 
 @code {
-    List<SizeDto> Sizes = new();
-    string sizeName = string.Empty;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            Sizes = await Mediator.Send(new GetAllSizeQuery());
-            StateHasChanged();
-        }
-    }
-
-    async Task SaveProductSize(int masterId)
-    {
-        await AppMediator.Send(new SaveSizeCommand
-            {
-                MasterId = masterId,
-                SizeName = sizeName.Trim()
-            })
-        .OnSuccess(async data =>
-        {
-            ToastService.Success("Size created successfully.");
-            Sizes = await Mediator.Send(new GetAllSizeQuery());
-            sizeName = string.Empty;
-            await InvokeAsync(StateHasChanged);
-        })
-        .OnError(error =>
-        {
-            ToastService.Error(error.Message);
-        });
-    }
+    
 }

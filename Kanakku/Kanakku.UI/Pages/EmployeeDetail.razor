@@ -80,6 +80,11 @@
                                     <td><MudImage Src="@idProof" Height="64" /></td>
                                 </tr>
                                 <tr>
+                                    <td>Designation</td>
+                                    <td>:</td>
+                                    <td><b>@(employee.Designation)</b></td>
+                                </tr>
+                                <tr>
                                     <td>Date of Joining</td>
                                     <td>:</td>
                                     <td><b>@(employee.DateOfJoining?.ToString(AppSetting.DATE_FORMAT))</b></td>
@@ -215,7 +220,14 @@
                                   Label="Pincode"
                                   Class="flex-grow-1"
                                   FullWidth=true />
-
+                    <MudSelect T="int?" Label="Designation" Variant="MudBlazor.Variant.Text" @bind-Value="@employee.DesignationId"
+                               For="@(() => employee.DesignationId)">
+                        <MudSelectItem Value="null" T="int?">Select</MudSelectItem>
+                        @foreach (var designation in Designations)
+                        {
+                            <MudSelectItem Value="@(designation.Id)" T="int?">@designation.Name</MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudDatePicker @bind-Date="employee.DateOfJoining"
                                    For="@(() => employee.DateOfJoining)"
                                    AllowKeyboardInput=true
@@ -335,6 +347,15 @@
                                   Label="Pincode"
                                   Class="flex-grow-1"
                                   FullWidth=true />
+
+                    <MudSelect T="int?" Label="Designation" Variant="MudBlazor.Variant.Text" @bind-Value="@editEmployee.DesignationId"
+                               For="@(() => editEmployee.DesignationId)">
+                        <MudSelectItem Value="null" T="int?">Select</MudSelectItem>
+                        @foreach (var designation in Designations)
+                        {
+                            <MudSelectItem Value="@(designation.Id)" T="int?">@designation.Name</MudSelectItem>
+                        }
+                    </MudSelect>
                     <MudDatePicker @bind-Date="editEmployee.DateOfJoining"
                                    For="@(() => editEmployee.DateOfJoining)"
                                    TransformOrigin="Origin.CenterLeft"
@@ -381,6 +402,7 @@
 
     private List<LookupDetailDto> States { get; set; } = new();
     private List<LookupDetailDto> Districts { get; set; } = new();
+    private List<DesignationDto> Designations { get; set; } = new();
 
     MudForm addEmpForm;
     EmployeeDto employee { get; set; } = new();
@@ -414,10 +436,12 @@
                 {
                     LookupMasterInternalName = LookupMasterInternalName.DISTRICT
                 });
+            var designationsTask = Mediator.Send(new GetAllDesignationQuery());
 
-            await Task.WhenAll(statesLookupTask, districtsLookupTask);
+            await Task.WhenAll(statesLookupTask, districtsLookupTask, designationsTask);
             States = statesLookupTask.Result;
             Districts = districtsLookupTask.Result;
+            Designations = designationsTask.Result;
         });
     }
 

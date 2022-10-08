@@ -21,7 +21,8 @@
             <MudStack>
                 <SearchableSelect T="Guid?" @bind-SelectedItem="employeeRegistry.EmployeeId" Label="Employee"
                                   Values="employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
-                                  For="@(() => employeeRegistry.EmployeeId)" />
+                                  For="@(() => employeeRegistry.EmployeeId)"
+                                  ValueChanged="GetUserSalary" />
                 <MudDatePicker @bind-Date="@employeeRegistry.SalaryPeriod"
                                For="@(() => employeeRegistry.SalaryPeriod)"
                                Margin="Margin.Dense"
@@ -30,7 +31,8 @@
                                FixDay="1"
                                DateFormat="MMM/yyyy"
                                OpenTo="OpenTo.Month"
-                               MaxDate="DateTime.Now" />
+                               MaxDate="DateTime.Now"
+                               PickerMonthChanged="(async x=> {employeeRegistry.SalaryPeriod = x; await GetUserSalary();})" />
                 <MudNumericField @bind-Value="@employeeRegistry.NumberOfDaysPresent"
                                  For="@(() => employeeRegistry.NumberOfDaysPresent)"
                                  Variant="Variant.Outlined"
@@ -69,7 +71,8 @@
                               Visible="@(filter.DateFilter.HasValue
                                 || filter.From.HasValue
                                 || filter.To.HasValue
-                                || (filter.Employees!=null && filter.Employees.Any()))">
+                                || (filter.Employees!=null && filter.Employees.Any())
+                                || (filter.Designations!=null && filter.Designations.Any()))">
                         <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
                                        Color="Color.Tertiary" Variant="Variant.Filled"
                                        OnClick="(()=> showFilterWindow = true)"></MudIconButton>
@@ -159,6 +162,25 @@
                         </ChildContent>
 
                     </MudExpansionPanel>
+                    <MudExpansionPanel>
+                        <TitleContent>
+                            <MudBadge Icon="@Icons.Material.Rounded.FilterAlt" Color="Color.Success" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.Designations != null && filter.Designations.Any())">
+                                <MudText Typo="Typo.subtitle2">Filter by 'Designation'</MudText>
+                            </MudBadge>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudSelect Dense="true" MultiSelection="true" HelperText="Designation" T="int" Label="Designation"
+                                       SelectAll="true"
+                                       @bind-SelectedValues="filter.Designations" MultiSelectionTextFunc="GetMultiSelectedDesignations">
+                                @foreach (var designation in designations)
+                                {
+                                    <MudSelectItem T="int" Value="@(designation.Id)">@designation.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        </ChildContent>
+
+                    </MudExpansionPanel>
                 </MudExpansionPanels>
             </MudItem>
             <MudItem xs="12">
@@ -181,14 +203,21 @@
     MudForm employeeRegistryForm;
 
     EmployeeMappingDto[] employees = new EmployeeMappingDto[0];
+    List<DesignationDto> designations = new();
 
     EmployeeRegistryDto[] registry = new EmployeeRegistryDto[0];
     bool showFilterWindow = false;
     bool isDataLoading = false;
     EmployeeRegistryFilterDto filter = new();
+
     protected override async Task OnInitializedAsync()
     {
-        employees = await Mediator.Send(new EmployeeMappingQuery());
+        var employeesTask = Mediator.Send(new EmployeeMappingQuery());
+        var designationTask = Mediator.Send(new GetAllDesignationQuery());
+
+        await Task.WhenAll(employeesTask, designationTask);
+        employees = employeesTask.Result;
+        designations = designationTask.Result;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -232,7 +261,6 @@
         employeeRegistryForm.ResetValidation();
     }
 
-
     string GetMultiSelectedEmployees(List<string> selectedValues)
     {
         if (!selectedValues.Any())
@@ -241,6 +269,16 @@
         }
 
         return string.Join(", ", selectedValues.Select(x => employees.First(y => y.EmployeeId.ToString() == x).EmployeeName));
+    }
+
+    string GetMultiSelectedDesignations(List<string> selectedValues)
+    {
+        if (!selectedValues.Any())
+        {
+            return string.Empty;
+        }
+
+        return string.Join(", ", selectedValues.Select(x => designations.First(y => y.Id.ToString() == x).Name));
     }
 
     void ResetFilterCondition()
@@ -267,7 +305,22 @@
                 DateFilter = filter.DateFilter,
                 Employees = filter.Employees,
                 From = filter.From,
-                To = filter.To
+                To = filter.To,
+                Designations = filter.Designations
             };
+    }
+
+    async Task GetUserSalary()
+    {
+        if (!employeeRegistry.EmployeeId.HasValue || !employeeRegistry.SalaryPeriod.HasValue)
+        {
+            return;
+        }
+
+        employeeRegistry.SalaryPerPeriod = await Mediator.Send(new GetUserSalaryPerMonthQuery()
+            {
+                EmpId = employeeRegistry.EmployeeId.Value,
+                SalaryMonth = employeeRegistry.SalaryPeriod.Value
+            });
     }
 }

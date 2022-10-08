@@ -23,9 +23,11 @@ public class Employee : DomainBase
     public string EsiRegNo { get; set; }
     public int? DpImageId { get; set; }
     public int? IdProofImageId { get; set; }
+    public int DesignationId { get; set; }
 
     public LookupDetail State { get; set; }
     public LookupDetail District { get; set; }
+    public Designation Designation { get; set; }
     public BinaryResource DisplayPicture { get; set; }
     public BinaryResource IdProof { get; set; }
     public List<WorkHistory> WorkHistories { get; set; }

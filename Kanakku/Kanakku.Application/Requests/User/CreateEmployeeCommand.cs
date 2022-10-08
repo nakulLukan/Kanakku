@@ -74,6 +74,7 @@ public class CreateEmployeeCommandHandler : IRequestHandler<CreateEmployeeComman
             EsiRegNo = request.EsiRegNo,
             DpImageId = request.DpImageId,
             IdProofImageId = request.IdProofImageId,
+            DesignationId = request.DesignationId.Value
         };
         _dbContext.Employees.Add(emp);
         await _dbContext.SaveAsync(cancellationToken);

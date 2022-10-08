@@ -2,10 +2,11 @@
 @typeparam T
 <MudAutocomplete T="T" Label="@Label"
                  SearchFunc="TextChanged" ToStringFunc="(x=> Values.FirstOrDefault(y=>y.Item1.Equals(x)).Item2 ?? default)"
-                 ValueChanged="((x)=>{ SelectedItem = x; ValueChanged.InvokeAsync(x);})"
                  Variant="Variant.Outlined"
                  Margin="Margin.Dense"
+                 Dense="true"
                  @ref="@mudAuto"
+                 @bind-Value=SelectedItem
                  For="For">
 </MudAutocomplete>
 
@@ -30,7 +31,6 @@
         {
             if (_selectedItem.Equals(value))
             {
-
                 return;
             };
             if (value is null)
@@ -41,6 +41,7 @@
             _selectedItem = value;
 
             SelectedItemChanged.InvokeAsync(value);
+            ValueChanged.InvokeAsync(value);
         }
     }
     [Parameter]

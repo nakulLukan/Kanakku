@@ -43,8 +43,9 @@
                     {
                         <MudPaper Class="border border-1 product-variant-quantity-border flex-grow-1" Elevation="0">
                             <MudText Class="n2 ps-4 pt-2" Typo="Typo.caption">Size</MudText>
-                            <div class="d-flex justify-space-between">
+                            <div class="d-flex justify-space-between pb-1">
                                 <MudCheckBox @bind-Checked="variant.IsChecked" Class="m-0 p-0"
+                                         Dense="true"
                                          T="bool" Label="@Variants.First(x=>x.VariantId == variant.OperationInstanceId).SizeName"></MudCheckBox>
                                 <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity"
                                              HideSpinButtons="true" Min="0"
@@ -69,7 +70,7 @@
                   Dense="true" RowsPerPage="10"
                   Bordered="true" Hover="true" Striped="true"
                   Loading="isDataLoading"
-                  CustomFooter="true" 
+                  CustomFooter="true"
                   Virtualize="true">
             <ToolBarContent>
                 <div class="d-flex flex-row justify-space-between w-100">
@@ -94,6 +95,7 @@
                 <MudTh>Qty</MudTh>
                 <MudTh>Price</MudTh>
                 <MudTh>Amt</MudTh>
+                <MudTh>Action</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Worked By">@context.WorkedBy</MudTd>
@@ -104,6 +106,9 @@
                 <MudTd DataLabel="Qty">@context.VariantQty</MudTd>
                 <MudTd DataLabel="Price">@context.VarianPrice.ToCurrency()</MudTd>
                 <MudTd DataLabel="Amt">@context.TotalAmount.ToCurrency()</MudTd>
+                <MudTd DataLabel="Action">
+                    <MudButton Variant="Variant.Text" Color="Color.Info" Size="Size.Small" OnClick="(async ()=> await OpenEditForm(context.Id))"> edit</MudButton>
+                </MudTd>
             </RowTemplate>
             <FooterContent>
                 <MudTFootRow>
@@ -111,7 +116,7 @@
                         <div class="d-flex flex-row-reverse">
                             <MudText>Total Amount: <b>@OperationItems.Sum(x=>x.TotalAmount).ToCurrency()</b></MudText>
                         </div>
-                     </MudTd>
+                    </MudTd>
                 </MudTFootRow>
             </FooterContent>
             <PagerContent>
@@ -216,10 +221,71 @@
 
     </DialogContent>
 </MudDialog>
+
+@*Edit work history entry*@
+
+<MudDialog IsVisible="showEditForm" Options="AppUIConstant.NormalDialogOption">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="ms-4 mt-5 mb-3">Edit Entry</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm Model="editDailyOperation" ValidationDelay="1"
+                 @ref="editOperationForm" Validation="editDailyOperationValidator.ValidateValue"
+                 Class="ps-4">
+            <div class="d-flex flex-row flex-wrap gap-3">
+                <MudDatePicker @bind-Date="@editDailyOperation.WorkedOn"
+                               For="@(() => editDailyOperation.WorkedOn)"
+                               Margin="Margin.Dense" Variant="Variant.Outlined" Label="Date"> </MudDatePicker>
+                <MudTimePicker @bind-Time="@editDailyOperation.WorkedTime"
+                               For="@(() => editDailyOperation.WorkedTime)"
+                               Margin="Margin.Dense" Variant="Variant.Outlined" Label="Time"> </MudTimePicker>
+
+                <SearchableSelect T="Guid?" @bind-SelectedItem="editDailyOperation.WorkedBy" Label="Employee"
+                                  Values="Employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
+                                  For="@(() => editDailyOperation.WorkedBy)" />
+                <SearchableSelect T="int?" @bind-SelectedItem="editDailyOperation.ProductId" Label="Product"
+                                  Values="Products.Select(x=> ((int?)x.ProductId, x.ProductName)).ToList()"
+                                  ValueChanged="OnEditFormProductSelect"
+                                  For="@(() => editDailyOperation.ProductId)" />
+                <SearchableSelect T="int?" @bind-SelectedItem="editDailyOperation.OperationId" Label="Operation"
+                                  Values="Operations.Select(x=> ((int?)x.OperationId, x.OperationName)).ToList()"
+                                  For="@(() => editDailyOperation.OperationId)" />
+                <MudGrid>
+                    <MudItem xs="6">
+                        <MudSelect T="int?" @bind-Value="editDailyOperation.VariantId" Label="Size"
+                                   For="@(() => editDailyOperation.VariantId)" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense">
+                            @foreach (var variant in Variants)
+                            {
+                                <MudSelectItem Value="variant.VariantId" T="int?">@variant.SizeName</MudSelectItem>
+                            }
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem xs="6">
+                        <MudNumericField @bind-Value="editDailyOperation.Quantity" Variant="Variant.Outlined" Min="1"
+                                         Label="Quantity" Margin="Margin.Dense"
+                                         For="@(() => editDailyOperation.Quantity)"></MudNumericField>
+                    </MudItem>
+                </MudGrid>
+                <div class="d-flex flex-row justify-space-between my-8 w-100">
+                    <div>
+                        <MudButton Color="Color.Transparent" OnClick="(()=> showEditForm = false)">Close</MudButton>
+                    </div>
+                    <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="EditWorkHistoryDetails">Submit</MudButton>
+                </div>
+            </div>
+        </MudForm>
+
+    </DialogContent>
+</MudDialog>
+
 @code {
     MudForm addOperationForm;
     DailyOperationDto dailyOperation { get; set; } = new();
     DailyOperationDtoValidator dailyOperationValidator { get; set; } = new();
+
+    DailyOperationDetailDto editDailyOperation { get; set; } = new();
+    MudForm editOperationForm;
+    DailyOperationDetailDtoValidator editDailyOperationValidator = new();
 
     ProductMappingDto[] Products = new ProductMappingDto[0];
     OperationMappingDto[] Operations = new OperationMappingDto[0];
@@ -228,6 +294,7 @@
     OperationItemDto[] OperationItems = new OperationItemDto[0];
     DailyOperationFilterDto filter = new();
     bool showFilterWindow = false;
+    bool showEditForm = false;
     string userId = string.Empty;
     bool isDataLoading = false;
 
@@ -253,18 +320,33 @@
 
     void OnProductSelect(int? selectedProduct)
     {
-        var prod = Products.FirstOrDefault(x => x.ProductId == dailyOperation.ProductId);
+        var prod = Products.FirstOrDefault(x => x.ProductId == selectedProduct);
         Operations = prod?.Operations
             ?? new OperationMappingDto[0];
         Variants = prod?.Variants
             ?? new VariantMappingDto[0];
-        dailyOperation.VariantsPerOperation = prod.Variants.Select(x => new OperaitonVariantDto
+        dailyOperation.VariantsPerOperation = prod != null ? prod.Variants.Select(x => new OperaitonVariantDto
             {
                 OperationInstanceId = x.VariantId,
                 Quantity = 0,
                 IsChecked = false
-            }).ToList();
+            }).ToList() : new();
         StateHasChanged();
+    }
+
+    void OnEditFormProductSelect(int? selectedProduct)
+    {
+        var prod = Products.FirstOrDefault(x => x.ProductId == selectedProduct);
+        Operations = prod?.Operations
+            ?? new OperationMappingDto[0];
+        Variants = prod?.Variants
+            ?? new VariantMappingDto[0];
+        if (!Operations.Any(x => x.OperationId == editDailyOperation.OperationId))
+        {
+            editDailyOperation.OperationId = null;
+            editDailyOperation.VariantId = null;
+            editDailyOperation.Quantity = null;
+        }
     }
 
     void ResetDetails()
@@ -296,6 +378,33 @@
                     await InvokeAsync(() =>
                     {
                         ResetDetails();
+                        StateHasChanged();
+                    });
+                })
+                .OnError(err =>
+                {
+                    ToastService.Error(err.Message);
+                });
+            isDataLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    async Task EditWorkHistoryDetails()
+    {
+        await editOperationForm.Validate();
+        if (editOperationForm.IsValid)
+        {
+            await AppMediator.Send(Mapper.Map(editDailyOperation, new EditDailyOperationDetailCommand()))
+                .OnSuccess(async data =>
+                {
+                    ToastService.Success("Daily operation updated successfully.");
+                    isDataLoading = true;
+                    showEditForm = false;
+                    await InvokeAsync(StateHasChanged);
+                    OperationItems = await Mediator.Send(BuildFilterDto());
+                    await InvokeAsync(() =>
+                    {
                         StateHasChanged();
                     });
                 })
@@ -381,6 +490,15 @@
                 WorkedBy = filter.WorkedBy,
                 WorkedFrom = filter.WorkedFrom,
                 WorkedTo = filter.WorkedTo
+            });
+    }
+
+    async Task OpenEditForm(int workHistoryId)
+    {
+        showEditForm = true;
+        editDailyOperation = await Mediator.Send(new GetDailyOperationDetailByIdQuery()
+            {
+                Id = workHistoryId
             });
     }
 }

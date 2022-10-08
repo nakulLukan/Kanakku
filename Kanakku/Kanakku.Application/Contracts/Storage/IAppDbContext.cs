@@ -20,6 +20,7 @@ public interface IAppDbContext
     DbSet<ProductInstance> ProductInstances { get; set; }
     public DbSet<ProductWorkInstance> ProductWorkInstances { get; set; }
     public DbSet<EmployeeSalaryHistory> EmployeeSalaryHistories { get; set; }
+    public DbSet<Designation> Designations { get; set; }
 
     int Save();
     Task<int> SaveAsync(CancellationToken cancellationToken);

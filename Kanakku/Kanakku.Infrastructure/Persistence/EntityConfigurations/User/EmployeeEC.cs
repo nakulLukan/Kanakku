@@ -25,6 +25,7 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.User
             builder.Property(x => x.EsiRegNo).IsRequired(false);
             builder.Property(x => x.DpImageId).IsRequired(false);
             builder.Property(x => x.IdProofImageId).IsRequired(false);
+            builder.Property(x => x.DesignationId).IsRequired(true).HasDefaultValue(1);
 
             builder.HasOne(x => x.DisplayPicture)
                 .WithMany()
@@ -41,6 +42,10 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.User
             builder.HasMany(x => x.WorkHistories)
                 .WithOne(x => x.Employee)
                 .HasForeignKey(x => x.EmployeeId);
+
+            builder.HasOne(x => x.Designation)
+                .WithMany()
+                .HasForeignKey(x => x.DesignationId);
         }
     }
 }

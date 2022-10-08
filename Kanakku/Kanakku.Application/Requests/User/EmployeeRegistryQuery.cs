@@ -49,6 +49,11 @@ public class EmployeeRegistryQueryHandler : IRequestHandler<EmployeeRegistryQuer
             linq = linq.Where(x => x.Period <= request.To);
         }
 
+        if (request.Designations != null && request.Designations.Any())
+        {
+            linq = linq.Where(x => request.Designations.Contains(x.Employee.DesignationId));
+        }
+
         return linq
             .OrderByDescending(x => x.Period)
             .ThenByDescending(x => x.ModifiedOn)

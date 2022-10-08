@@ -51,5 +51,7 @@ namespace Kanakku.Application.Models.User
                 to = value;
             }
         }
+
+        public IEnumerable<int> Designations { get; set; }
     }
 }
