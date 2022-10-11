@@ -39,6 +39,10 @@ public static class ServiceRegistry
             cfg.CreateMap<DailyOperationDto, SubmitDailyOperationCommand>();
             cfg.CreateMap<DailyOperationDetailDto, EditDailyOperationDetailCommand>();
             cfg.CreateMap<EmployeeRegistryEntryDto, EmployeeRegistryEntryCommand>();
+            cfg.CreateMap<DailyOperationFilterDto, DailyOperationsQuery>();
+            cfg.CreateMap<DailyOperationFilterDto, DailyOperationsExportCommand>();
+            cfg.CreateMap<EmployeeRegistryFilterDto, EmployeeRegistryExportCommand>();
+            cfg.CreateMap<EmployeeRegistryFilterDto, EmployeeRegistryQuery>();
         });
 
         serviceCollection.AddSingleton(autoMapperConfiguration.CreateMapper());

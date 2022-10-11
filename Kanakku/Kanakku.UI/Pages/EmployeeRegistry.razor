@@ -67,16 +67,24 @@
             <ToolBarContent>
                 <div class="d-flex flex-row justify-space-between w-100">
                     <MudText Typo="Typo.h6">Salary History</MudText>
-                    <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
-                              Visible="@(filter.DateFilter.HasValue
+                    <MudStack Row="true" Spacing="1">
+                        <MudItem>
+                            <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.DateFilter.HasValue
                                 || filter.From.HasValue
                                 || filter.To.HasValue
                                 || (filter.Employees!=null && filter.Employees.Any())
-                                || (filter.Designations!=null && filter.Designations.Any()))">
-                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
-                                       Color="Color.Tertiary" Variant="Variant.Filled"
+                                        || (filter.Designations!=null && filter.Designations.Any()))">
+                                <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
+                                               Color="Color.Tertiary" Variant="Variant.Filled"
                                        OnClick="(()=> showFilterWindow = true)"></MudIconButton>
-                    </MudBadge>
+                            </MudBadge>
+                        </MudItem>
+                        <MudItem>
+                            <ExportButton OnClickAction="(()=> Mediator.Send(Mapper.Map(filter, new EmployeeRegistryExportCommand())))" />
+                        </MudItem>
+                    </MudStack>
+                    
                 </div>
             </ToolBarContent>
             <HeaderContent>

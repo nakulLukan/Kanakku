@@ -75,15 +75,21 @@
             <ToolBarContent>
                 <div class="d-flex flex-row justify-space-between w-100">
                     <MudText Typo="Typo.h6">Operations </MudText>
-                    <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
-                              Visible="@(filter.WorkedBy != null && filter.WorkedBy.Any()
+                    <MudStack Row="true" Spacing="1">
+                        <MudItem>
+                            <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
+                                      Visible="@(filter.WorkedBy != null && filter.WorkedBy.Any()
                                 ||filter.Products != null && filter.Products.Any()
                                 || filter.WorkedFrom.HasValue || filter.WorkedTo.HasValue)">
-                        <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
-                                       Color="Color.Tertiary" Variant="Variant.Filled"
-                                       OnClick="(()=> showFilterWindow = true)"></MudIconButton>
-                    </MudBadge>
-
+                                <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
+                                               Color="Color.Tertiary" Variant="Variant.Filled"
+                                               OnClick="(()=> showFilterWindow = true)"></MudIconButton>
+                            </MudBadge>
+                        </MudItem>
+                        <MudItem>
+                            <ExportButton OnClickAction="ExportDailyOperations" />
+                        </MudItem>
+                    </MudStack>
                 </div>
             </ToolBarContent>
             <HeaderContent>
@@ -467,16 +473,7 @@
 
     DailyOperationsQuery BuildFilterDto()
     {
-        return new DailyOperationsQuery
-            {
-                Operations = filter.Operations,
-                Products = filter.Products,
-                Sizes = filter.Sizes,
-                WorkedBy = filter.WorkedBy,
-                WorkedFrom = filter.WorkedFrom,
-                WorkedTo = filter.WorkedTo,
-                QuickFilter = filter.QuickFilter
-            };
+        return Mapper.Map(filter, new DailyOperationsQuery());
     }
 
     async Task SaveFilterConditionToStorage()
@@ -500,5 +497,10 @@
             {
                 Id = workHistoryId
             });
+    }
+
+    async Task<string> ExportDailyOperations()
+    {
+        return await Mediator.Send(Mapper.Map(filter, new DailyOperationsExportCommand()));
     }
 }

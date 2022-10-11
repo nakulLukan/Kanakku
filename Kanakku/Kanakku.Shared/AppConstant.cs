@@ -17,8 +17,10 @@ public static class LookupMasterInternalName
 public static class DirectoryConstant
 {
     public const string BINARY_RESOURCE_FORMAT = "{0}/Kanakku/Binary Resources";
+    public const string EXPORT_DIRECTORY_FORMAT = "{0}/Kanakku/Binary Resources/Exports";
     public const string DFAULT_PRODUCT_IMAGE_PLACEHOLDER = "./assets/images/default-product-placeholder.png";
     public const string DFAULT_IMAGE_PLACEHOLDER = "./assets/images/default-product-placeholder.png";
+    public static string EXPORT_DIRECTORY_PATH => String.Format(DirectoryConstant.EXPORT_DIRECTORY_FORMAT, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 }
 
 public static class Constant
@@ -45,4 +47,6 @@ public static class UIComp
 public static class AppSetting
 {
     public const string DATE_FORMAT = "dd-MMM-yyyy";
+    public const string DATE_TIME_FORMAT = "dd-MMM-yyyy HH:mm";
+    public const string MONTH_YEAR_FORMAT = "MMM-yyyy";
 }
