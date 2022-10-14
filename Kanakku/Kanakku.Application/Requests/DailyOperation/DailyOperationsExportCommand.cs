@@ -29,59 +29,10 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
     public async Task<string> Handle(DailyOperationsExportCommand request, CancellationToken cancellationToken)
     {
         var filter = (DailyOperationFilterDto)request;
-        (List<OperationItemExportDto> data, float totalAmt, string subTitle) = await GetDataToExport(filter);
+        (List<OperationItemExportDto> data, float totalAmt, string subTitle, bool isSingleUser) =
+            await GetDataToExport(filter);
         string title = "Daily Operations";
-
-        var columnMetaData = new List<ColumnMetaData>
-        {
-            new()
-            {
-                DisplayName = "Worked On",
-                PropertyName = nameof(OperationItemExportDto.WorkedOn),
-                MinimumLength = 1f,
-            },
-            new()
-            {
-                DisplayName = "Worked By",
-                PropertyName = nameof(OperationItemExportDto.WorkedBy),
-                MinimumLength = 1.1f,
-            },
-            new()
-            {
-                DisplayName = "Product",
-                PropertyName = nameof(OperationItemExportDto.Product)
-            },
-            new()
-            {
-                DisplayName = "Operation",
-                PropertyName = nameof(OperationItemExportDto.Operation),
-                MinimumLength = 1.5f,
-            },
-            new()
-            {
-                DisplayName = "Size",
-                PropertyName = nameof(OperationItemExportDto.Variant),
-                MinimumLength = 1.5f
-            },
-            new()
-            {
-                DisplayName = "Price",
-                PropertyName = nameof(OperationItemExportDto.VarianPrice),
-                MinimumLength = 0.7f
-            },
-            new()
-            {
-                DisplayName = "Qty",
-                PropertyName = nameof(OperationItemExportDto.VariantQty),
-                MinimumLength = 0.5f
-            },
-            new()
-            {
-                DisplayName = "Amt",
-                PropertyName = nameof(OperationItemExportDto.TotalAmount),
-                MinimumLength = 0.7f
-            },
-        };
+        List<ColumnMetaData> columnMetaData = GetColumnDefinitions(isSingleUser);
 
         var footerMetaData = new FooterMetaData
         {
@@ -106,12 +57,74 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
         return pdfPath;
     }
 
-    private async Task<(List<OperationItemExportDto> ExportData, float TotalAmt, string SubTitle)>
+    private static List<ColumnMetaData> GetColumnDefinitions(bool isSingleUser)
+    {
+        var columnMetaData = new List<ColumnMetaData>();
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Worked On",
+            PropertyName = nameof(OperationItemExportDto.WorkedOn),
+            MinimumLength = 1f,
+        });
+
+        if (!isSingleUser)
+        {
+            columnMetaData.Add(new()
+            {
+                DisplayName = "Worked By",
+                PropertyName = nameof(OperationItemExportDto.WorkedBy),
+                MinimumLength = 1.1f,
+            });
+        }
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Product",
+            PropertyName = nameof(OperationItemExportDto.Product),
+            MinimumLength = 1.7f,
+        });
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Operation",
+            PropertyName = nameof(OperationItemExportDto.Operation),
+            MinimumLength = 1.7f,
+        });
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Size",
+            PropertyName = nameof(OperationItemExportDto.Variant),
+            MinimumLength = 1f
+        });
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Price",
+            PropertyName = nameof(OperationItemExportDto.VarianPrice),
+            MinimumLength = 0.7f
+        });
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Qty",
+            PropertyName = nameof(OperationItemExportDto.VariantQty),
+            MinimumLength = 0.5f
+        });
+        columnMetaData.Add(new()
+        {
+            DisplayName = "Amt",
+            PropertyName = nameof(OperationItemExportDto.TotalAmount),
+            MinimumLength = 0.8f
+        });
+        return columnMetaData;
+    }
+
+    private async Task<(List<OperationItemExportDto> ExportData,
+        float TotalAmt,
+        string SubTitle,
+        bool isSingleUser)>
         GetDataToExport(DailyOperationFilterDto filter)
     {
         var data = await mediator.Send(mapper.Map(filter, new DailyOperationsQuery()));
         float totalAmount = data.Sum(x => x.TotalAmount);
-        foreach(var record in data)
+        bool isSingleUser = false;
+        foreach (var record in data)
         {
             record.WorkedOn = record.WorkedOn.ToLocalTime();
         }
@@ -123,6 +136,7 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
             if (data.Select(x => x.WorkedBy).Distinct().Count() == 1)
             {
                 userPlaceholder = data.First().WorkedBy;
+                isSingleUser = true;
             }
             subTitle.Append($"Work history of {userPlaceholder}");
             var minDate = data.Min(x => x.WorkedOn).ToString(AppSetting.DATE_FORMAT);
@@ -149,7 +163,7 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
                 WorkedBy = x.WorkedBy,
                 WorkedOn = x.WorkedOn.ToString(AppSetting.DATE_FORMAT),
             })
-            .ToList(), totalAmount, subTitle.ToString());
+            .ToList(), totalAmount, subTitle.ToString(), isSingleUser);
     }
 }
 

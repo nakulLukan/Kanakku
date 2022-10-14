@@ -28,7 +28,8 @@ namespace Kanakku.Application.Requests.User
             var daysToSub = (1 - request.SalaryPeriod.Value.Date.Day);
             request.SalaryPeriod = request.SalaryPeriod?.Date.AddDays(daysToSub).ToDateTimeKind();
             var entryExists = await dbContext.EmployeeSalaryHistories
-                .AnyAsync(x => x.EmpId == request.EmployeeId.Value
+                .AnyAsync(x => x.Id != request.Id
+                    && x.EmpId == request.EmployeeId.Value
                     && x.Period == request.SalaryPeriod, cancellationToken);
 
             if (entryExists)
@@ -42,19 +43,29 @@ namespace Kanakku.Application.Requests.User
                 throw new AppException($"Number of days present should be less than or equal to '{maxDaysInMonth}' for the month '{request.SalaryPeriod.Value.ToString("MMMM")}'");
             }
             var userId = await sessionContext.GetUserId();
-            var entry = new EmployeeSalaryHistory
-            {
-                DaysPresent = request.NumberOfDaysPresent,
-                EmpId = request.EmployeeId.Value,
-                Salary = request.SalaryPerPeriod,
-                Period = request.SalaryPeriod.Value,
-                CreatedBy = userId,
-                ModifiedBy = userId,
-                CreatedOn = DateTime.UtcNow,
-                ModifiedOn = DateTime.UtcNow
-            };
+            var entry = await dbContext.EmployeeSalaryHistories.AsTracking()
+                .SingleOrDefaultAsync(x => x.Id == request.Id, cancellationToken);
 
-            await dbContext.EmployeeSalaryHistories.AddAsync(entry);
+            if (entry == null)
+            {
+                entry = new EmployeeSalaryHistory()
+                {
+                    CreatedBy = userId,
+                    CreatedOn = DateTime.UtcNow,
+                };
+            }
+
+            entry.DaysPresent = request.NumberOfDaysPresent;
+            entry.EmpId = request.EmployeeId.Value;
+            entry.Salary = request.SalaryPerPeriod;
+            entry.Period = request.SalaryPeriod.Value;
+            entry.ModifiedBy = userId;
+            entry.ModifiedOn = DateTime.UtcNow;
+
+            if (entry.Id < 1)
+            {
+                await dbContext.EmployeeSalaryHistories.AddAsync(entry);
+            }
             await dbContext.SaveAsync(cancellationToken);
             return entry.Id;
         }

@@ -20,7 +20,7 @@
                  Class="bg-white p-4">
             <MudStack>
                 <SearchableSelect T="Guid?" @bind-SelectedItem="employeeRegistry.EmployeeId" Label="Employee"
-                                  Values="employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
+                                  Values="employees.Where(x=> !x.IsResigned).Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
                                   For="@(() => employeeRegistry.EmployeeId)"
                                   ValueChanged="GetUserSalary" />
                 <MudDatePicker @bind-Date="@employeeRegistry.SalaryPeriod"
@@ -77,14 +77,14 @@
                                         || (filter.Designations!=null && filter.Designations.Any()))">
                                 <MudIconButton Icon="@Icons.Material.Filled.FilterAlt" aria-label="filter"
                                                Color="Color.Tertiary" Variant="Variant.Filled"
-                                       OnClick="(()=> showFilterWindow = true)"></MudIconButton>
+                                               OnClick="(()=> showFilterWindow = true)"></MudIconButton>
                             </MudBadge>
                         </MudItem>
                         <MudItem>
                             <ExportButton OnClickAction="(()=> Mediator.Send(Mapper.Map(filter, new EmployeeRegistryExportCommand())))" />
                         </MudItem>
                     </MudStack>
-                    
+
                 </div>
             </ToolBarContent>
             <HeaderContent>
@@ -93,6 +93,7 @@
                 <MudTh>Period</MudTh>
                 <MudTh>Present Days</MudTh>
                 <MudTh>Salary</MudTh>
+                <MudTh>Action</MudTh>
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Employee Name">@context.EmpName</MudTd>
@@ -100,6 +101,9 @@
                 <MudTd DataLabel="Period">@context.SalaryMonth.ToString("MMM/yyyy")</MudTd>
                 <MudTd DataLabel="Present Days">@context.DaysPresent</MudTd>
                 <MudTd DataLabel="Salary">@context.Salary.ToCurrency()</MudTd>
+                <MudTd DataLabel="Action">
+                    <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditRegistry(context.Id))" Size="Size.Small"> Edit</MudButton>
+                </MudTd>
             </RowTemplate>
             <FooterContent>
                 <MudTFootRow>
@@ -117,7 +121,7 @@
     </MudItem>
 </MudGrid>
 
-
+@*Filter window*@
 <MudDialog IsVisible="showFilterWindow" Options="AppUIConstant.NormalDialogOption">
     <TitleContent>
         <MudText Typo="Typo.h6">Configure filter conditions</MudText>
@@ -142,10 +146,10 @@
                             </MudRadioGroup>
                             <MudGrid>
                                 <MudItem xs="12" md="6">
-                                    <MudDatePicker @bind-Date="filter.From" Label="From" FixDay="1" OpenTo="OpenTo.Month"></MudDatePicker>
+                                    <MudDatePicker @bind-Date="filter.From" Label="From" FixDay="1" OpenTo="OpenTo.Month" DateFormat="MMM-yyyy"></MudDatePicker>
                                 </MudItem>
                                 <MudItem xs="12" md="6">
-                                    <MudDatePicker @bind-Date="filter.To" Label="To" FixDay="1" OpenTo="OpenTo.Month"></MudDatePicker>
+                                    <MudDatePicker @bind-Date="filter.To" Label="To" FixDay="1" OpenTo="OpenTo.Month" DateFormat="MMM-yyyy"></MudDatePicker>
                                 </MudItem>
                             </MudGrid>
                         </ChildContent>
@@ -204,11 +208,68 @@
 
     </DialogContent>
 </MudDialog>
+
+@**@
+
+@*Edit salary history entry*@
+<MudDialog IsVisible="showEditForm" Options="AppUIConstant.NormalDialogOption">
+    <TitleContent>
+        <MudText Typo="Typo.h6" Class="ms-4 mt-5 mb-3">Edit Salary History</MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudForm Model="editEmployeeRegistry" ValidationDelay="1"
+                 @ref="editSalaryHistory" Validation="editModelValidator.ValidateValue"
+                 Class="bg-white p-4">
+            <MudStack>
+                <SearchableSelect T="Guid?" @bind-SelectedItem="editEmployeeRegistry.EmployeeId" Label="Employee"
+                                  Values="employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
+                                  For="@(() => editEmployeeRegistry.EmployeeId)" />
+                <MudDatePicker @bind-Date="@editEmployeeRegistry.SalaryPeriod"
+                               For="@(() => editEmployeeRegistry.SalaryPeriod)"
+                               Margin="Margin.Dense"
+                               Variant="Variant.Outlined"
+                               Label="Month/Year"
+                               FixDay="1"
+                               DateFormat="MMM-yyyy"
+                               OpenTo="OpenTo.Month"
+                               MaxDate="DateTime.Now" />
+                <MudNumericField @bind-Value="@editEmployeeRegistry.NumberOfDaysPresent"
+                                 For="@(() => editEmployeeRegistry.NumberOfDaysPresent)"
+                                 Variant="Variant.Outlined"
+                                 Label="Number of days present"
+                                 Margin="Margin.Dense"
+                                 T="int"
+                                 Min="0" />
+                <MudNumericField @bind-Value="@editEmployeeRegistry.SalaryPerPeriod"
+                                 For="@(() => editEmployeeRegistry.SalaryPerPeriod)"
+                                 Label="Salary"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 T="float"
+                                 Min="0" />
+
+                <MudStack Row=true Justify="Justify.SpaceBetween">
+                    <div>
+                        <MudButton Color="Color.Transparent" OnClick="(() => showEditForm = false)">Close</MudButton>
+                    </div>
+                    <MudButton Color="Color.Success" Variant="MudBlazor.Variant.Filled" OnClick="EditEntry">Submit</MudButton>
+                </MudStack>
+            </MudStack>
+        </MudForm>
+
+    </DialogContent>
+</MudDialog>
+
 @code {
     EmployeeRegistryEntryDto employeeRegistry = new();
     EmployeeRegistryEntryDto employeeRegistryReset = new();
     EmployeeRegistryEntryDtoValidator employeeRegistryValidator = new();
     MudForm employeeRegistryForm;
+
+    bool showEditForm = false;
+    MudForm editSalaryHistory;
+    EmployeeRegistryEntryDto editEmployeeRegistry = new();
+    EmployeeRegistryEntryDtoValidator editModelValidator = new();
 
     EmployeeMappingDto[] employees = new EmployeeMappingDto[0];
     List<DesignationDto> designations = new();
@@ -330,5 +391,35 @@
                 EmpId = employeeRegistry.EmployeeId.Value,
                 SalaryMonth = employeeRegistry.SalaryPeriod.Value
             });
+    }
+
+    async Task EditRegistry(int contextId)
+    {
+        editEmployeeRegistry = await Mediator.Send(new GetSalaryHistoryByIdQuery()
+            {
+                Id = contextId
+            });
+        showEditForm = true;
+    }
+
+    async Task EditEntry()
+    {
+        await editSalaryHistory.Validate();
+        if (!editSalaryHistory.IsValid)
+        {
+            return;
+        }
+        await AppMediator.Send(Mapper.Map(editEmployeeRegistry, new EmployeeRegistryEntryCommand()))
+        .OnSuccess(async data =>
+        {
+            ToastService.Success("Entry updated successfully");
+            registry = await Mediator.Send(BuildFilterDto());
+            showEditForm = false;
+            await InvokeAsync(StateHasChanged);
+        })
+        .OnError(err =>
+        {
+            ToastService.Error(err.Message);
+        });
     }
 }

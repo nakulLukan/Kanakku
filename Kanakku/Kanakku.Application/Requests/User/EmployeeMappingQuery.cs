@@ -22,11 +22,11 @@ namespace Kanakku.Application.Requests.User
         {
             DateTime today = DateTime.UtcNow;
             return await _appDbContext.Employees.OrderBy(x => x.Code)
-                .Where(x => !x.ResignedOn.HasValue || x.ResignedOn.Value > today)
                 .Select(x => new EmployeeMappingDto
                 {
                     EmployeeId = x.Id,
-                    EmployeeName = $"({x.Code}) - {x.Name}"
+                    EmployeeName = $"({x.Code}) - {x.Name}",
+                    IsResigned = !(!x.ResignedOn.HasValue || x.ResignedOn.Value > today)
                 }).ToArrayAsync(cancellationToken);
         }
     }

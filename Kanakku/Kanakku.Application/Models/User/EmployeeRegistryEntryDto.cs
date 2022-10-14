@@ -5,6 +5,7 @@ namespace Kanakku.Application.Models.User;
 
 public class EmployeeRegistryEntryDto
 {
+    public int Id { get; set; }
     public Guid? EmployeeId { get; set; }
     public DateTime? SalaryPeriod { get; set; } = DateTime.Now;
     public float SalaryPerPeriod { get; set; }

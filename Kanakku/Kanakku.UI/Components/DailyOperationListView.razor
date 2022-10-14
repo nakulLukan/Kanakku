@@ -36,7 +36,7 @@
                                   Values="Operations.Select(x=> ((int?)x.OperationId, x.OperationName)).ToList()"
                                   For="@(() => dailyOperation.OperationId)" />
                 <SearchableSelect T="Guid?" @bind-SelectedItem="dailyOperation.WorkedBy" Label="Employee"
-                                  Values="Employees.Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
+                                  Values="Employees.Where(x=> !x.IsResigned).Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
                                   For="@(() => dailyOperation.WorkedBy)" />
                 <div class="d-flex flex-wrap  flex-grow-1 gap-2 justify-space-between">
                     @foreach (var variant in dailyOperation.VariantsPerOperation)
@@ -359,7 +359,12 @@
     {
         dailyOperation = new();
         addOperationForm.ResetValidation();
-        dailyOperation.VariantsPerOperation = Products.FirstOrDefault(x => x.ProductId == dailyOperation.ProductId)
+        dailyOperation.VariantsPerOperation = GetSelectedProductVariants(dailyOperation.ProductId);
+    }
+
+    List<OperaitonVariantDto> GetSelectedProductVariants(int? productId)
+    {
+        return Products.FirstOrDefault(x => x.ProductId == productId)
             ?.Variants?.Select(x => new OperaitonVariantDto
                 {
                     OperationInstanceId = x.VariantId,
@@ -383,7 +388,14 @@
 
                     await InvokeAsync(() =>
                     {
+                        var lastEmployeeSelected = dailyOperation.WorkedBy;
+                        var lastProductSelected = dailyOperation.ProductId;
                         ResetDetails();
+
+                        // Reset the employee and product selected with last submoitted values
+                        dailyOperation.WorkedBy = lastEmployeeSelected;
+                        dailyOperation.ProductId = lastProductSelected;
+                        dailyOperation.VariantsPerOperation = GetSelectedProductVariants(lastProductSelected);
                         StateHasChanged();
                     });
                 })

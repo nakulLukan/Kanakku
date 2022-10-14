@@ -4,5 +4,6 @@
     {
         public Guid EmployeeId { get; set; }
         public string EmployeeName { get; set; }
+        public bool IsResigned { get; set; }
     }
 }

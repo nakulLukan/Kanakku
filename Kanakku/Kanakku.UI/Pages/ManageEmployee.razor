@@ -1,11 +1,13 @@
 ﻿@page "/manage-employees"
 @using AutoMapper
+@using Kanakku.Application
 @using Kanakku.Application.Contracts.Presentation
 @using Kanakku.Application.Models.Lookup
 @using Kanakku.Application.Models.User
 @using Kanakku.Application.Requests.Lookup
 @using Kanakku.Application.Requests.User
 @using Kanakku.Shared
+@using Kanakku.UI.Components
 @using Kanakku.UI.Contracts.Event
 @using Kanakku.UI.Impl.Event
 @inject IAppMediator AppMediator;
@@ -20,7 +22,14 @@
     <ToolBarContent>
         <div class="d-flex flex-row w-100 justify-space-between">
             <MudText Typo="Typo.h6">Employees</MudText>
-            <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> EditEmployee(null))">Add Employee</MudButton>
+            <MudStack Row="true" Spacing="1">
+                <MudItem>
+                    <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> EditEmployee(null))">Add Employee</MudButton>
+                </MudItem>
+                <MudItem>
+                    <ExportButton OnClickAction="(()=> Mediator.Send(new GetAllEmployeesExportCommand()))" />
+                </MudItem>
+            </MudStack>
         </div>
     </ToolBarContent>
     <HeaderContent>
@@ -42,16 +51,16 @@
         <MudTd DataLabel="Address">@context.AddressLineOne</MudTd>
         <MudTd DataLabel="Contact Number">@context.PhoneNumber1</MudTd>
         <MudTd DataLabel="Date of Joining">@context.DateOfJoining?.ToString(AppSetting.DATE_FORMAT)</MudTd>
-        <MudTd DataLabel="Working Status">@(context.RegsignedOn.HasValue && context.RegsignedOn.Value.Date <= DateTime.Now.Date ? "Resigned" : "Working")</MudTd>
-        <MudTd DataLabel="Action">
-            <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))" Size="Size.Small"> view details</MudButton>
-        </MudTd>
-    </RowTemplate>
-    <PagerContent>
-        <MudTablePager />
-    </PagerContent>
-</MudTable>
-@code {
+        <MudTd DataLabel="Working Status">@GlobalFunctions.GetWorkingStatus(context.RegsignedOn)</MudTd>
+            <MudTd DataLabel="Action">
+                <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditEmployee(context))" Size="Size.Small"> View</MudButton>
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager />
+        </PagerContent>
+    </MudTable>
+    @code {
     private List<EmployeeDto> Employees { get; set; } = new();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

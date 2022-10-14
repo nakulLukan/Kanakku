@@ -14,6 +14,12 @@ public class FooterMetaData
     public int FooterFontSize { get; set; } = 15;
 }
 
+public class DisplayPictureConfig
+{
+    public string DpPath { get; set; }
+    public float RelativeSpaceRequired { get; set; } = 0.5f;
+}
+
 public class PrintConfig<T>
 {
     public string Title { get; set; }
@@ -22,4 +28,6 @@ public class PrintConfig<T>
     public FooterMetaData FooterMetaData { get; set; }
     public bool ShowSerialNumber { get; set; }
     public List<T> Data { get; set; }
+    public string MyProperty { get; set; }
+    public DisplayPictureConfig DisplayPictureConfig { get; set; }
 }

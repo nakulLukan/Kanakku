@@ -9,12 +9,14 @@
 @using Kanakku.UI.Contracts.Event
 @using Kanakku.UI.Extensions
 @using Kanakku.UI.Components
+@using MediatR
 
 @inject IToastService ToastService;
 @inject IAppMediator AppMediator
+@inject IMediator Mediator
 @inject NavigationManager NavigationManager;
 
-<Back Href="manage-products"/>
+<Back Href="manage-products" />
 @if (ProductId != 0)
 {
     <MudGrid>
@@ -25,59 +27,69 @@
                       T="WorkDto" Dense="true">
                     <ToolBarContent>
                         <div class="d-flex flex-row justify-space-between w-100">
-                            <h5 >@productDetails.Name</h5>
-                            <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> addOperationDialogVisible = true)">Add Operation</MudButton>
+                            <MudText Typo="Typo.h6">@($"{productDetails.Name} ({productDetails.ShortCode})")</MudText>
+                            <MudStack Row="true" Spacing="1">
+                                <MudItem>
+                                    <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> addOperationDialogVisible = true)">Add Operation</MudButton>
+                                </MudItem>
+                                <MudItem>
+                                    <ExportButton OnClickAction="(()=> Mediator.Send(new ProductDetailExportCommand()
+                                        {
+                                            ProductId = ProductId
+                                        }))" />
+                                </MudItem>
+                            </MudStack>
                         </div>
-                    </ToolBarContent>
-                    <HeaderContent>
-                        <MudTh Style="width: 10px;">S/N</MudTh>
-                        <MudTh>Operation</MudTh>
-                        <MudTh>Rate</MudTh>
-                        <MudTh>Action</MudTh>
-                    </HeaderContent>
-                    <RowTemplate>
-                        <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
-                        <MudTd DataLabel="Operation">@context.WorkName</MudTd>
-                        <MudTd DataLabel="Rate">@context.Rate.ToCurrency()</MudTd>
-                        <MudTd DataLabel="Action">
-                            <MudButton Variant="MudBlazor.Variant.Text" Color="Color.Info" OnClick="(()=> OnOperationSelect(context))" Size="Size.Small"> Edit Operation</MudButton>
-                        </MudTd>
-                    </RowTemplate>
-                    <FooterContent>
-                        <MudTh></MudTh>
-                        <MudTh><MudText Typo="Typo.subtitle1">Total</MudText></MudTh>
-                        <MudTh><MudText Typo="Typo.subtitle1">@productDetails.Works.Sum(x => x.Rate).ToCurrency()</MudText></MudTh>
-                        <MudTh></MudTh>
-                    </FooterContent>
-                    <PagerContent>
-                        <MudTablePager />
-                    </PagerContent>
-                </MudTable>
-            </div>
-        </MudItem>
-        <MudItem xs="12" md="5">
-            <MudGrid Spacing="3">
-                <MudItem xs="12">
-                    <MudPaper Class="p-4 text-center">
-                        <MudImage Src="@ProductImage" ObjectFit="ObjectFit.Contain" Class="rounded-lg product-dp" Elevation="0" />
-                        <div class="mx-auto">
-                            <InputFile id="productImage" OnChange="OnFileChange" hidden multiple accept=".jpg, .jpeg, .png" />
-                            <MudButton Class="mt-2" HtmlTag="label"
+                        </ToolBarContent>
+                        <HeaderContent>
+                            <MudTh Style="width: 10px;">S/N</MudTh>
+                            <MudTh>Operation</MudTh>
+                            <MudTh>Rate</MudTh>
+                            <MudTh>Action</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
+                            <MudTd DataLabel="Operation">@context.WorkName</MudTd>
+                            <MudTd DataLabel="Rate">@context.Rate.ToCurrency()</MudTd>
+                            <MudTd DataLabel="Action">
+                                <MudButton Variant="MudBlazor.Variant.Text" Color="Color.Info" OnClick="(()=> OnOperationSelect(context))" Size="Size.Small"> Edit Operation</MudButton>
+                            </MudTd>
+                        </RowTemplate>
+                        <FooterContent>
+                            <MudTh></MudTh>
+                            <MudTh><MudText Typo="Typo.subtitle1">Total</MudText></MudTh>
+                            <MudTh><MudText Typo="Typo.subtitle1">@productDetails.Works.Sum(x => x.Rate).ToCurrency()</MudText></MudTh>
+                            <MudTh></MudTh>
+                        </FooterContent>
+                        <PagerContent>
+                            <MudTablePager />
+                        </PagerContent>
+                    </MudTable>
+                </div>
+            </MudItem>
+            <MudItem xs="12" md="5">
+                <MudGrid Spacing="3">
+                    <MudItem xs="12">
+                        <MudPaper Class="p-4 text-center">
+                            <MudImage Src="@ProductImage" ObjectFit="ObjectFit.Contain" Class="rounded-lg product-dp" Elevation="0" />
+                            <div class="mx-auto">
+                                <InputFile id="productImage" OnChange="OnFileChange" hidden multiple accept=".jpg, .jpeg, .png" />
+                                <MudButton Class="mt-2" HtmlTag="label"
                                    Variant="MudBlazor.Variant.Filled"
                                    Color="Color.Primary"
                                    StartIcon="@Icons.Filled.CloudUpload"
                                    for="productImage">
-                                Upload
-                            </MudButton>
-                        </div>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12">
-                    <ProductInstanceDetail ProductId="ProductId"></ProductInstanceDetail>
-                </MudItem>
-            </MudGrid>
-        </MudItem>
-    </MudGrid>
+                                    Upload
+                                </MudButton>
+                            </div>
+                        </MudPaper>
+                    </MudItem>
+                    <MudItem xs="12">
+                        <ProductInstanceDetail ProductId="ProductId"></ProductInstanceDetail>
+                    </MudItem>
+                </MudGrid>
+            </MudItem>
+        </MudGrid>
 }
 
 @*Add product modal*@

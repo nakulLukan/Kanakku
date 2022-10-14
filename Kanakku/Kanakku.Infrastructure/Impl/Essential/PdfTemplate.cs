@@ -16,6 +16,7 @@ internal class PdfTemplate<T> : IDocument
     public List<ColumnMetaData> ColumnMetaData { get; set; }
     public FooterMetaData FooterMetaData { get; set; }
     public bool ShowSerialNumber { get; set; }
+    public DisplayPictureConfig DisplayPictureConfig { get; set; }
 
     readonly IDictionary<string, PropertyInfo> propertyInfos = new Dictionary<string, PropertyInfo>();
 
@@ -27,6 +28,7 @@ internal class PdfTemplate<T> : IDocument
         FooterMetaData = config.FooterMetaData;
         ShowSerialNumber = config.ShowSerialNumber;
         SubTitle = config.SubTitle;
+        DisplayPictureConfig = config.DisplayPictureConfig;
     }
 
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
@@ -60,21 +62,48 @@ internal class PdfTemplate<T> : IDocument
                 .ExtraBold()
                 .Underline();
 
-            if (!string.IsNullOrEmpty(SubTitle))
-            {
-
-                col.Item()
-                .AlignLeft()
-                .PaddingTop(10)
-                .PaddingBottom(5)
-                .Text(SubTitle)
-                    .FontSize(SubTitleFontSize)
-                    .Bold();
-
-            }
-
             col.Item()
-            .Table(ComposeTable);
+            .Row(row =>
+            {
+                row.RelativeColumn()
+                .ExtendHorizontal()
+                .Column(col =>
+                {
+
+                    if (!string.IsNullOrEmpty(SubTitle))
+                    {
+                        col.Item()
+                        .AlignLeft()
+                        .PaddingTop(10)
+                        .PaddingBottom(5)
+                        .Text(SubTitle)
+                            .FontSize(SubTitleFontSize)
+                            .Bold();
+                    }
+
+                    col.Item()
+                    .Table(ComposeTable);
+                });
+
+                if (DisplayPictureConfig != null && !string.IsNullOrEmpty(DisplayPictureConfig.DpPath))
+                {
+                    row.RelativeItem(DisplayPictureConfig.RelativeSpaceRequired)
+                    .PaddingLeft(10)
+                    .ShowOnce()
+                    .Column(col =>
+                    {
+                        col.Item()
+                        .Padding(10)
+                        .Text(" ");
+
+                        col.Item()
+                        .PaddingLeft(20)
+                        .AlignCenter()
+                        .MaxHeight(200)
+                        .Image(DisplayPictureConfig.DpPath, ImageScaling.FitHeight);
+                    });
+                }
+            });
         });
     }
 
@@ -199,21 +228,25 @@ internal class PdfTemplate<T> : IDocument
             }
         }
 
-        table.Cell()
-        .ColumnSpan((uint)(ColumnMetaData.Count + (ShowSerialNumber ? 1 : 0)))
-        .AlignRight()
-        .PaddingVertical(5)
-        .Text(text =>
+        // Set table footer
+        if (FooterMetaData != null)
         {
-            text
-            .Span(FooterMetaData.FooterText)
-            .FontSize(FooterMetaData.FooterFontSize);
+            table.Cell()
+            .ColumnSpan((uint)(ColumnMetaData.Count + (ShowSerialNumber ? 1 : 0)))
+            .AlignRight()
+            .PaddingVertical(5)
+            .Text(text =>
+            {
+                text
+                .Span(FooterMetaData.FooterText)
+                .FontSize(FooterMetaData.FooterFontSize);
 
-            text
-            .Span(FooterMetaData.FooterTextValue)
-            .FontSize(FooterMetaData.FooterFontSize)
-            .Bold();
-        });
+                text
+                .Span(FooterMetaData.FooterTextValue)
+                .FontSize(FooterMetaData.FooterFontSize)
+                .Bold();
+            });
+        }
     }
 
     PropertyInfo GetProperty(string propertyName)
