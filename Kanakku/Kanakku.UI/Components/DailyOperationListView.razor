@@ -105,7 +105,7 @@
             </HeaderContent>
             <RowTemplate>
                 <MudTd DataLabel="Worked By">@context.WorkedBy</MudTd>
-                <MudTd DataLabel="Worked On">@context.WorkedOn.ToLocalTime().ToString(UIComp.DateTimeFormat)</MudTd>
+                <MudTd DataLabel="Worked On">@context.WorkedOn.ToLocalTime().ToString(AppSetting.DATE_TIME_FORMAT)</MudTd>
                 <MudTd DataLabel="Product">@context.Product</MudTd>
                 <MudTd DataLabel="Operation">@context.Operation</MudTd>
                 <MudTd DataLabel="Size">@context.Variant</MudTd>
@@ -118,7 +118,7 @@
             </RowTemplate>
             <FooterContent>
                 <MudTFootRow>
-                    <MudTd colspan="7">
+                    <MudTd colspan="8k">
                         <div class="d-flex flex-row-reverse">
                             <MudText>Total Amount: <b>@OperationItems.Sum(x=>x.TotalAmount).ToCurrency()</b></MudText>
                         </div>
@@ -390,11 +390,13 @@
                     {
                         var lastEmployeeSelected = dailyOperation.WorkedBy;
                         var lastProductSelected = dailyOperation.ProductId;
+                        var lastDataSelected = dailyOperation.WorkedOn;
                         ResetDetails();
 
                         // Reset the employee and product selected with last submoitted values
                         dailyOperation.WorkedBy = lastEmployeeSelected;
                         dailyOperation.ProductId = lastProductSelected;
+                        dailyOperation.WorkedOn = lastDataSelected;
                         dailyOperation.VariantsPerOperation = GetSelectedProductVariants(lastProductSelected);
                         StateHasChanged();
                     });

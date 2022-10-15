@@ -47,6 +47,13 @@
                                  Margin="Margin.Dense"
                                  T="float"
                                  Min="0" />
+                <MudNumericField @bind-Value="@employeeRegistry.Bonus"
+                                 For="@(() => employeeRegistry.Bonus)"
+                                 Label="Bonus"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 T="float?"
+                                 Min="0" />
 
                 <MudStack Row=true Justify="Justify.SpaceBetween">
                     <div>
@@ -68,6 +75,9 @@
                 <div class="d-flex flex-row justify-space-between w-100">
                     <MudText Typo="Typo.h6">Salary History</MudText>
                     <MudStack Row="true" Spacing="1">
+                        <MudItem>
+                            <MudSwitch @bind-Checked="@showBonus" ThumbIcon="@(showBonus ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff)" ThumbIconColor="@(showBonus ? Color.Success : Color.Error)">Show Bonus</MudSwitch>
+                        </MudItem>
                         <MudItem>
                             <MudBadge Dot="true" Color="Color.Secondary" Overlap="true" Bordered="true" Elevation="5"
                                       Visible="@(filter.DateFilter.HasValue
@@ -93,6 +103,10 @@
                 <MudTh>Period</MudTh>
                 <MudTh>Present Days</MudTh>
                 <MudTh>Salary</MudTh>
+                @if (showBonus)
+                {
+                    <MudTh>Bonus</MudTh>
+                }
                 <MudTh>Action</MudTh>
             </HeaderContent>
             <RowTemplate>
@@ -101,6 +115,10 @@
                 <MudTd DataLabel="Period">@context.SalaryMonth.ToString("MMM/yyyy")</MudTd>
                 <MudTd DataLabel="Present Days">@context.DaysPresent</MudTd>
                 <MudTd DataLabel="Salary">@context.Salary.ToCurrency()</MudTd>
+                @if (showBonus)
+                {
+                    <MudTd DataLabel="Bonus">@context.Bonus.ToCurrency()</MudTd>
+                }
                 <MudTd DataLabel="Action">
                     <MudButton Variant="Variant.Text" Color="Color.Info" OnClick="(()=> EditRegistry(context.Id))" Size="Size.Small"> Edit</MudButton>
                 </MudTd>
@@ -108,9 +126,13 @@
             <FooterContent>
                 <MudTFootRow>
                     <MudTd colspan="7">
-                        <div class="d-flex flex-row-reverse">
+                        <MudStack Row="true" Spacing="5" Justify="Justify.FlexEnd">
                             <MudText>Total Salary: <b>@registry.Sum(x=>x.Salary).ToCurrency()</b></MudText>
-                        </div>
+                            @if (showBonus)
+                            {
+                                <MudText>Total Bonus: <b>@registry.Sum(x=>x.Bonus).ToCurrency()</b></MudText>
+                            }
+                        </MudStack>
                     </MudTd>
                 </MudTFootRow>
             </FooterContent>
@@ -247,6 +269,13 @@
                                  Margin="Margin.Dense"
                                  T="float"
                                  Min="0" />
+                <MudNumericField @bind-Value="@editEmployeeRegistry.Bonus"
+                                 For="@(() => editEmployeeRegistry.Bonus)"
+                                 Label="Bonus"
+                                 Variant="Variant.Outlined"
+                                 Margin="Margin.Dense"
+                                 T="float?"
+                                 Min="0" />
 
                 <MudStack Row=true Justify="Justify.SpaceBetween">
                     <div>
@@ -278,6 +307,7 @@
     bool showFilterWindow = false;
     bool isDataLoading = false;
     EmployeeRegistryFilterDto filter = new();
+    bool showBonus = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -314,7 +344,11 @@
 
             await InvokeAsync(() =>
             {
+                var lastSelectedDate = employeeRegistry.SalaryPeriod;
                 OnReset();
+
+                // Keep the state
+                employeeRegistry.SalaryPeriod = lastSelectedDate;
                 StateHasChanged();
             });
         })
@@ -375,7 +409,8 @@
                 Employees = filter.Employees,
                 From = filter.From,
                 To = filter.To,
-                Designations = filter.Designations
+                Designations = filter.Designations,
+                ShowBonus = showBonus
             };
     }
 
