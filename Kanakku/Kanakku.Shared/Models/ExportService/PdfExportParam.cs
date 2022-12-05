@@ -28,6 +28,6 @@ public class PrintConfig<T>
     public FooterMetaData FooterMetaData { get; set; }
     public bool ShowSerialNumber { get; set; }
     public List<T> Data { get; set; }
-    public string MyProperty { get; set; }
     public DisplayPictureConfig DisplayPictureConfig { get; set; }
+    public int TableFontSize { get; set; } = 10;
 }

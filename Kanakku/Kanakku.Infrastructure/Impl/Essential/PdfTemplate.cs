@@ -17,6 +17,7 @@ internal class PdfTemplate<T> : IDocument
     public FooterMetaData FooterMetaData { get; set; }
     public bool ShowSerialNumber { get; set; }
     public DisplayPictureConfig DisplayPictureConfig { get; set; }
+    public PrintConfig<T> Config { get; set; }
 
     readonly IDictionary<string, PropertyInfo> propertyInfos = new Dictionary<string, PropertyInfo>();
 
@@ -29,6 +30,7 @@ internal class PdfTemplate<T> : IDocument
         ShowSerialNumber = config.ShowSerialNumber;
         SubTitle = config.SubTitle;
         DisplayPictureConfig = config.DisplayPictureConfig;
+        Config = config;
     }
 
     public DocumentMetadata GetMetadata() => DocumentMetadata.Default;
@@ -155,7 +157,7 @@ internal class PdfTemplate<T> : IDocument
 
     void ComposeTable(TableDescriptor table)
     {
-        const int TableFontSize = 10;
+        int TableFontSize = Config.TableFontSize;
         table.ColumnsDefinition(columnDef =>
         {
             if (ShowSerialNumber)

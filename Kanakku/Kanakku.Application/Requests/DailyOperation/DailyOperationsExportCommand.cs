@@ -50,6 +50,7 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
             ShowSerialNumber = false,
             SubTitle = subTitle,
             Title = title,
+            TableFontSize = 8,
         };
 
         var pdfPath = exportService.GenerateAndSavePdf(config, fileDirectory, fileName);
@@ -64,7 +65,7 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
         {
             DisplayName = "Worked On",
             PropertyName = nameof(OperationItemExportDto.WorkedOn),
-            MinimumLength = 1.1f,
+            MinimumLength = 0.8f,
         });
 
         if (!isSingleUser)
@@ -80,37 +81,37 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
         {
             DisplayName = "Product",
             PropertyName = nameof(OperationItemExportDto.Product),
-            MinimumLength = 1.7f,
+            MinimumLength = 2f,
         });
         columnMetaData.Add(new()
         {
             DisplayName = "Operation",
             PropertyName = nameof(OperationItemExportDto.Operation),
-            MinimumLength = 1.7f,
+            MinimumLength = 2f,
         });
         columnMetaData.Add(new()
         {
             DisplayName = "Size",
             PropertyName = nameof(OperationItemExportDto.Variant),
-            MinimumLength = 1f
+            MinimumLength = 0.4f
         });
         columnMetaData.Add(new()
         {
             DisplayName = "Price",
             PropertyName = nameof(OperationItemExportDto.VarianPrice),
-            MinimumLength = 0.7f
+            MinimumLength = 0.5f
         });
         columnMetaData.Add(new()
         {
             DisplayName = "Qty",
             PropertyName = nameof(OperationItemExportDto.VariantQty),
-            MinimumLength = 0.5f
+            MinimumLength = 0.3f
         });
         columnMetaData.Add(new()
         {
             DisplayName = "Amt",
             PropertyName = nameof(OperationItemExportDto.TotalAmount),
-            MinimumLength = 0.8f
+            MinimumLength = 0.7f
         });
         return columnMetaData;
     }
