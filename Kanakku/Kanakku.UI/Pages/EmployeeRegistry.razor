@@ -91,7 +91,7 @@
                             </MudBadge>
                         </MudItem>
                         <MudItem>
-                            <ExportButton OnClickAction="(()=> Mediator.Send(Mapper.Map(filter, new EmployeeRegistryExportCommand())))" />
+                            <ExportButton OnClickAction="(()=> Mediator.Send(Mapper.Map(BuildFilterDto(), new EmployeeRegistryExportCommand())))" />
                         </MudItem>
                     </MudStack>
 

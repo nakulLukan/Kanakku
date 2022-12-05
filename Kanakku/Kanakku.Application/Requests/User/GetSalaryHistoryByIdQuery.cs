@@ -27,7 +27,8 @@ public class GetSalaryHistoryByIdQueryHandler : IRequestHandler<GetSalaryHistory
                 NumberOfDaysPresent = x.DaysPresent,
                 EmployeeId = x.EmpId,
                 SalaryPeriod = x.Period.ToLocalTime(),
-                SalaryPerPeriod = x.Salary
+                SalaryPerPeriod = x.Salary,
+                Bonus = x.Bonus
             })
             .SingleAsync(x => x.Id == request.Id, cancellationToken);
     }

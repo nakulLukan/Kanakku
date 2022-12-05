@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using Kanakku.Application.Contracts.Essential;
-using Kanakku.Application.Models.DailyOperation;
 using Kanakku.Application.Models.User;
 using Kanakku.Shared;
 using Kanakku.Shared.Extensions;
@@ -30,8 +29,7 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
     public async Task<string> Handle(EmployeeRegistryExportCommand request, CancellationToken cancellationToken)
     {
         var filter = (EmployeeRegistryFilterDto)request;
-        (List<EmployeeRegistryExportDto> data, float totalAmt, string subTitle) =
-            await GetDataToExport(filter);
+        var data = await GetDataToExport(filter);
         string title = "Salary History";
 
         var columnMetaData = new List<ColumnMetaData>
@@ -67,21 +65,38 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
             },
         };
 
+        if (request.ShowBonus)
+        {
+            columnMetaData.Add(
+                new()
+                {
+                    DisplayName = "Bonus",
+                    PropertyName = nameof(EmployeeRegistryExportDto.Bonus),
+                    MinimumLength = 1f
+                });
+        }
+
         var footerMetaData = new FooterMetaData
         {
             FooterText = "Total Salary : ",
-            FooterTextValue = $"{totalAmt.ToCurrencyAsAscii()} INR"
+            FooterTextValue = $"{data.TotalAmt.ToCurrencyAsAscii()} INR"
         };
+
+        if (request.ShowBonus)
+        {
+            footerMetaData.FooterText = $"{footerMetaData.FooterText}\nTotal Bonus : ";
+            footerMetaData.FooterTextValue = $"{data.TotalAmt.ToCurrencyAsAscii()} INR\n{data.TotalBonus.ToCurrencyAsAscii()} INR";
+        }
 
         string fileDirectory = DirectoryConstant.EXPORT_DIRECTORY_PATH;
         string fileName = $"Salary History {DateTime.Now.ToFileTime()}.pdf";
         var config = new PrintConfig<EmployeeRegistryExportDto>()
         {
-            Data = data,
+            Data = data.ExportData,
             ColumnMetaData = columnMetaData,
             FooterMetaData = footerMetaData,
             ShowSerialNumber = false,
-            SubTitle = subTitle,
+            SubTitle = data.SubTitle,
             Title = title,
         };
 
@@ -90,15 +105,19 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
         return pdfPath;
     }
 
-    private async Task<(List<EmployeeRegistryExportDto> ExportData, float TotalAmt, string SubTitle)>
+    private async Task<(List<EmployeeRegistryExportDto> ExportData,
+        float TotalAmt,
+        float TotalBonus,
+        string SubTitle)>
         GetDataToExport(EmployeeRegistryFilterDto filter)
     {
         var data = await mediator.Send(mapper.Map(filter, new EmployeeRegistryQuery()));
-        foreach(var record in data)
+        foreach (var record in data)
         {
             record.SalaryMonth = record.SalaryMonth.ToLocalTime();
         }
         var totalAmount = data.Sum(x => x.Salary);
+        var totalBonus = data.Sum(x => x.Bonus) ?? 0F;
         StringBuilder subTitle = new StringBuilder();
         if (data.Any())
         {
@@ -108,11 +127,11 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
                 userPlaceholder = data.First().EmpName;
             }
             subTitle.Append($"Salary history of {userPlaceholder}");
-            var minDate = data.Min(x => x.SalaryMonth).ToString(AppSetting.DATE_FORMAT);
-            var maxDate = data.Max(x => x.SalaryMonth).ToString(AppSetting.DATE_FORMAT);
+            var minDate = data.Min(x => x.SalaryMonth).ToString(AppSetting.MONTH_YEAR_FORMAT);
+            var maxDate = data.Max(x => x.SalaryMonth).ToString(AppSetting.MONTH_YEAR_FORMAT);
             if (minDate == maxDate)
             {
-                subTitle.Append($" of {minDate} month.");
+                subTitle.Append($" in the month of {minDate}.");
             }
             else
             {
@@ -127,9 +146,10 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
                 SalaryMonth = x.SalaryMonth.ToString(AppSetting.MONTH_YEAR_FORMAT),
                 EmpName = x.EmpName,
                 DaysPresent = x.DaysPresent,
-                EmpCode = x.EmpCode 
+                EmpCode = x.EmpCode,
+                Bonus = x.Bonus.ToCurrencyAsAscii()
             })
-            .ToList(), totalAmount, subTitle.ToString());
+            .ToList(), totalAmount, totalBonus, subTitle.ToString());
     }
 }
 

@@ -53,5 +53,6 @@ namespace Kanakku.Application.Models.User
         }
 
         public IEnumerable<int> Designations { get; set; }
+        public bool ShowBonus { get; set; }
     }
 }

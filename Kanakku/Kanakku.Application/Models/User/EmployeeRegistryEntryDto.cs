@@ -9,6 +9,7 @@ public class EmployeeRegistryEntryDto
     public Guid? EmployeeId { get; set; }
     public DateTime? SalaryPeriod { get; set; } = DateTime.Now;
     public float SalaryPerPeriod { get; set; }
+    public float? Bonus { get; set; }
     public int NumberOfDaysPresent { get; set; }
 }
 

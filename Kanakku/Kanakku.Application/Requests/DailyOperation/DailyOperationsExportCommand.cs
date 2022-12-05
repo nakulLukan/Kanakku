@@ -64,7 +64,7 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
         {
             DisplayName = "Worked On",
             PropertyName = nameof(OperationItemExportDto.WorkedOn),
-            MinimumLength = 1f,
+            MinimumLength = 1.1f,
         });
 
         if (!isSingleUser)

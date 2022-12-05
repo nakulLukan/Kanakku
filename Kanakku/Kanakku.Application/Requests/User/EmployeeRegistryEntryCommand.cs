@@ -61,6 +61,7 @@ namespace Kanakku.Application.Requests.User
             entry.Period = request.SalaryPeriod.Value;
             entry.ModifiedBy = userId;
             entry.ModifiedOn = DateTime.UtcNow;
+            entry.Bonus = request.Bonus;
 
             if (entry.Id < 1)
             {

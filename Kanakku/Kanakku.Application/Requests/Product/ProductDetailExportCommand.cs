@@ -32,7 +32,7 @@ public class ProductDetailExportCommandHandler : IRequestHandler<ProductDetailEx
         FooterMetaData footerMetaData = new FooterMetaData
         {
             FooterText = "Total : ",
-            FooterTextValue = data.TotalAmt.ToCurrencyAsAscii(),
+            FooterTextValue = $"{data.TotalAmt.ToCurrencyAsAscii()} INR",
         };
         string fileDirectory = DirectoryConstant.EXPORT_DIRECTORY_PATH;
         string fileName = $"Products {DateTime.Now.ToFileTime()}.pdf";

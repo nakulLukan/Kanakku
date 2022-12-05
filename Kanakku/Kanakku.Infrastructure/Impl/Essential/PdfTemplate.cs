@@ -235,14 +235,13 @@ internal class PdfTemplate<T> : IDocument
             .ColumnSpan((uint)(ColumnMetaData.Count + (ShowSerialNumber ? 1 : 0)))
             .AlignRight()
             .PaddingVertical(5)
-            .Text(text =>
+            .Row(row =>
             {
-                text
-                .Span(FooterMetaData.FooterText)
+                row.AutoItem()
+                .Text(FooterMetaData.FooterText)
                 .FontSize(FooterMetaData.FooterFontSize);
-
-                text
-                .Span(FooterMetaData.FooterTextValue)
+                row.AutoItem()
+                .Text(FooterMetaData.FooterTextValue)
                 .FontSize(FooterMetaData.FooterFontSize)
                 .Bold();
             });

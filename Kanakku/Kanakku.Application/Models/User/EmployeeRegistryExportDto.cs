@@ -7,5 +7,6 @@
         public string SalaryMonth { get; set; }
         public int DaysPresent { get; set; }
         public string Salary { get; set; }
+        public string Bonus { get; set; }
     }
 }

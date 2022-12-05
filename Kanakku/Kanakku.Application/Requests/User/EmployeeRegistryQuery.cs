@@ -64,7 +64,8 @@ public class EmployeeRegistryQueryHandler : IRequestHandler<EmployeeRegistryQuer
                 EmpName = x.Employee.Name,
                 Id = x.Id,
                 Salary = x.Salary,
-                SalaryMonth = x.Period
+                SalaryMonth = x.Period,
+                Bonus = x.Bonus
             })
             .ToArrayAsync(cancellationToken);
     }

@@ -13,6 +13,7 @@ namespace Kanakku.Infrastructure.Persistence.EntityConfigurations.User
             builder.Property(x => x.CreatedOn).IsRequired(false);
             builder.Property(x => x.ModifiedBy).IsRequired(false);
             builder.Property(x => x.ModifiedOn).IsRequired(false);
+            builder.Property(x => x.Bonus).IsRequired(false).HasDefaultValue(null);
 
             builder.HasOne(x => x.Employee)
                 .WithMany()
