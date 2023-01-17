@@ -38,18 +38,19 @@ namespace Kanakku.Application.Requests.DailyOperation
             }
             foreach (var variant in request.VariantsPerOperation.Where(x => x.IsChecked).ToArray())
             {
-                var prodVar = product.ProductInstances.First(x => x.Id == variant.OperationInstanceId);
-                var workInstance = prodVar.ProductWorkInstances.First(x => x.WorkId == request.OperationId.Value);
+                var workInstance = product.ProductInstances.SelectMany(x=>x.ProductWorkInstances)
+                    .First(x => x.WorkId == request.OperationId.Value 
+                        && x.Id == variant.OperationInstanceId);
                 if (workInstance.NetQuantity < variant.Quantity)
                 {
-                    throw new AppException($"Quantity for size '{prodVar.ProductSize.Size}' cannot be greater than {workInstance.NetQuantity}.");
+                    throw new AppException($"Quantity for size '{workInstance.ProductInstance.ProductSize.Size}' cannot be greater than {workInstance.NetQuantity}.");
                 }
 
                 works.Add(new()
                 {
                     EmployeeId = request.WorkedBy.Value,
                     WorkId = request.OperationId.Value,
-                    VariantId = variant.OperationInstanceId,
+                    VariantId = workInstance.ProductInstanceId,
                     WorkedOn = request.WorkedOn.Value.Date.Add(request.WorkedTime.Value).ToUniversalTime(),
                     ModifiedOn = DateTime.UtcNow,
                     CreatedOn = DateTime.UtcNow,

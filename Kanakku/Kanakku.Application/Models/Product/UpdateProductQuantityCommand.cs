@@ -1,4 +1,7 @@
-﻿using Kanakku.Application.Contracts.Storage;
+﻿using FluentValidation;
+using Kanakku.Application.Contracts.Storage;
+using Kanakku.Application.Requests.Product;
+using Kanakku.Shared.Utilities;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,5 +62,14 @@ public class UpdateProductQuantityCommandHandler : IRequestHandler<UpdateProduct
 
         await _dbContext.SaveAsync(cancellationToken);
         return true;
+    }
+}
+
+public class UpdateProductQuantityCommandValidator : AppAbstractValidator<UpdateProductQuantityCommand>
+{
+    public UpdateProductQuantityCommandValidator()
+    {
+        RuleForEach(x => x.ProductQuantity)
+            .ChildRules(x => x.RuleFor(y => y.Quantity).GreaterThanOrEqualTo(0));
     }
 }

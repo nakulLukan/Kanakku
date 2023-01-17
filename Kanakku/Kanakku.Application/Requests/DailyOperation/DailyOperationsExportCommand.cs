@@ -29,15 +29,15 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
     public async Task<string> Handle(DailyOperationsExportCommand request, CancellationToken cancellationToken)
     {
         var filter = (DailyOperationFilterDto)request;
-        (List<OperationItemExportDto> data, float totalAmt, string subTitle, bool isSingleUser) =
+        (List<OperationItemExportDto> data, float totalAmt, int totalQty, string subTitle, bool isSingleUser) =
             await GetDataToExport(filter);
         string title = "Daily Operations";
         List<ColumnMetaData> columnMetaData = GetColumnDefinitions(isSingleUser);
 
         var footerMetaData = new FooterMetaData
         {
-            FooterText = "Total Amount : ",
-            FooterTextValue = $"{totalAmt.ToCurrencyAsAscii()} INR"
+            FooterText = "Total Amount : \nTotal Quantity : ",
+            FooterTextValue = $"{totalAmt.ToCurrencyAsAscii()} INR\n{totalQty}"
         };
 
         string fileDirectory = DirectoryConstant.EXPORT_DIRECTORY_PATH;
@@ -118,12 +118,14 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
 
     private async Task<(List<OperationItemExportDto> ExportData,
         float TotalAmt,
+        int TotalQty,
         string SubTitle,
         bool isSingleUser)>
         GetDataToExport(DailyOperationFilterDto filter)
     {
         var data = await mediator.Send(mapper.Map(filter, new DailyOperationsQuery()));
         float totalAmount = data.Sum(x => x.TotalAmount);
+        int totalQty = data.Sum(x => x.VariantQty);
         bool isSingleUser = false;
         foreach (var record in data)
         {
@@ -164,7 +166,7 @@ public class DailyOperationsExportCommandHandler : IRequestHandler<DailyOperatio
                 WorkedBy = x.WorkedBy,
                 WorkedOn = x.WorkedOn.ToString(AppSetting.DATE_FORMAT),
             })
-            .ToList(), totalAmount, subTitle.ToString(), isSingleUser);
+            .ToList(), totalAmount, totalQty, subTitle.ToString(), isSingleUser);
     }
 }
 

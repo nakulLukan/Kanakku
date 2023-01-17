@@ -2,6 +2,7 @@
 @using Kanakku.Application.Contracts.Presentation
 @using Kanakku.Application.Contracts.Storage
 @using Kanakku.Application.Models.DailyOperation
+@using Kanakku.Application.Models.Product;
 @using Kanakku.Application.Requests.DailyOperation
 @using Kanakku.Application.Requests.Product
 @using Kanakku.Application.Requests.User
@@ -34,6 +35,7 @@
                                   For="@(() => dailyOperation.ProductId)" />
                 <SearchableSelect T="int?" @bind-SelectedItem="dailyOperation.OperationId" Label="Operation"
                                   Values="Operations.Select(x=> ((int?)x.OperationId, x.OperationName)).ToList()"
+                                  ValueChanged="OnOperationSelect"
                                   For="@(() => dailyOperation.OperationId)" />
                 <SearchableSelect T="Guid?" @bind-SelectedItem="dailyOperation.WorkedBy" Label="Employee"
                                   Values="Employees.Where(x=> !x.IsResigned).Select(x=> ((Guid?)x.EmployeeId, x.EmployeeName)).ToList()"
@@ -43,17 +45,33 @@
                     {
                         <MudPaper Class="border border-1 product-variant-quantity-border flex-grow-1" Elevation="0">
                             <MudText Class="n2 ps-4 pt-2" Typo="Typo.caption">Size</MudText>
-                            <div class="d-flex justify-space-between pb-1">
+                            <MudStack Row="true" Class="ps-2 pe-2" Spacing="1" Justify="Justify.FlexStart">
                                 <MudCheckBox @bind-Checked="variant.IsChecked" Class="m-0 p-0"
                                          Dense="true"
-                                         T="bool" Label="@Variants.First(x=>x.VariantId == variant.OperationInstanceId).SizeName"></MudCheckBox>
+                                         T="bool" Label="@variant.SizeName"></MudCheckBox>
                                 <MudNumericField T="int" Class="ml-3 mt-0" Label="Quantity"
                                              HideSpinButtons="true" Min="0"
                                              Margin="Margin.Dense"
                                              @bind-Value="@variant.Quantity" Variant="Variant.Outlined" Style="max-width: 80px;"></MudNumericField>
-                            </div>
+                                @if (variant.NetQuantity.HasValue)
+                                {
+                                    <MudLink @onclick="(() => ToggleQuantityUpdatePopup(variant))"
+                                     Typo="Typo.caption" Class="cursor-pointer">Balance: @variant.NetQuantity</MudLink>
+                                }
+                            </MudStack>
                         </MudPaper>
                     }
+                    <MudPopover Fixed="true" Open="showUpdateQuantityPopover" Paper="true"
+                                Class="p-4">
+                        <MudNumericField T="int?" HelperText="@($"Update Quantity of '{sizeName}'")"
+                                         Immediate="true"
+                                         Label="Enter Quantity" InputType="InputType.Number"
+                                         Variant="Variant.Text" Class="mb-2"
+                                         @bind-Value="selectedQuantity" Min="0" />
+                        <MudButton Size="Size.Small" Variant="Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit"
+                                   OnClick="UpdateQuantity">Update</MudButton>
+                        <MudButton Size="Size.Small" Variant="Variant.Text" OnClick="(()=> showUpdateQuantityPopover = false)">Close</MudButton>
+                    </MudPopover>
                 </div>
 
                 <div class="d-flex flex-row justify-space-between my-8 w-100">
@@ -113,15 +131,25 @@
                 <MudTd DataLabel="Price">@context.VarianPrice.ToCurrency()</MudTd>
                 <MudTd DataLabel="Amt">@context.TotalAmount.ToCurrency()</MudTd>
                 <MudTd DataLabel="Action">
-                    <MudButton Variant="Variant.Text" Color="Color.Info" Size="Size.Small" OnClick="(async ()=> await OpenEditForm(context.Id))"> edit</MudButton>
+                    <MudIconButton Icon="@Icons.Material.Filled.Edit" aria-label="edit" Size="Size.Small" OnClick="(async ()=> await OpenEditForm(context.Id))"></MudIconButton>
+                </MudTd>
+                <MudTd DataLabel="Action">
+                    <MudIconButton Icon="@Icons.Material.Filled.Delete" aria-label="delete" Size="Size.Small"
+                                   OnClick="(async () => await OnWorkRecordDelete(context.Id))"></MudIconButton>
                 </MudTd>
             </RowTemplate>
             <FooterContent>
                 <MudTFootRow>
-                    <MudTd colspan="8k">
-                        <div class="d-flex flex-row-reverse">
-                            <MudText>Total Amount: <b>@OperationItems.Sum(x=>x.TotalAmount).ToCurrency()</b></MudText>
-                        </div>
+                    <MudTd colspan="8">
+                        <MudStack Spacing="1">
+                            <div class="d-flex flex-row-reverse">
+                                <MudText>Total Amount: <b>@OperationItems.Sum(x => x.TotalAmount).ToCurrency()</b></MudText>
+                            </div>
+                            <div class="d-flex flex-row-reverse">
+                                <MudText>Total Quantity: <b>@OperationItems.Sum(x => x.VariantQty)</b></MudText>
+                            </div>
+                        </MudStack>
+
                     </MudTd>
                 </MudTFootRow>
             </FooterContent>
@@ -284,6 +312,8 @@
     </DialogContent>
 </MudDialog>
 
+
+
 @code {
     MudForm addOperationForm;
     DailyOperationDto dailyOperation { get; set; } = new();
@@ -303,6 +333,14 @@
     bool showEditForm = false;
     string userId = string.Empty;
     bool isDataLoading = false;
+
+    bool showUpdateQuantityPopover = false;
+    string sizeName = string.Empty;
+    int? selectedQuantity = null;
+    int? selectedSizeId = null;
+    int? selectedProductId = null;
+    int? selectedOperationId = null;
+    int? selectedOperationInstanceId = null;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -326,18 +364,87 @@
 
     void OnProductSelect(int? selectedProduct)
     {
+        selectedProductId = selectedProduct;
+        dailyOperation.OperationId = selectedOperationId = null;
         var prod = Products.FirstOrDefault(x => x.ProductId == selectedProduct);
         Operations = prod?.Operations
             ?? new OperationMappingDto[0];
-        Variants = prod?.Variants
-            ?? new VariantMappingDto[0];
-        dailyOperation.VariantsPerOperation = prod != null ? prod.Variants.Select(x => new OperaitonVariantDto
-            {
-                OperationInstanceId = x.VariantId,
-                Quantity = 0,
-                IsChecked = false
-            }).ToList() : new();
+
         StateHasChanged();
+    }
+
+    void ToggleQuantityUpdatePopup(OperaitonVariantDto variant)
+    {
+        if (!showUpdateQuantityPopover)
+        {
+            selectedQuantity = null;
+        }
+
+        showUpdateQuantityPopover = !showUpdateQuantityPopover;
+        sizeName = dailyOperation.VariantsPerOperation.FirstOrDefault(x => x.OperationInstanceId == variant.OperationInstanceId)?.SizeName;
+        selectedSizeId = dailyOperation.VariantsPerOperation.FirstOrDefault(x => x.OperationInstanceId == variant.OperationInstanceId)?.SizeId;
+        selectedOperationInstanceId = variant.OperationInstanceId;
+    }
+
+    async Task OnOperationSelect(int? selectedOperation)
+    {
+        selectedOperationId = selectedOperation;
+        if (!selectedOperation.HasValue)
+        {
+            dailyOperation.VariantsPerOperation = new();
+            return;
+        }
+        dailyOperation.VariantsPerOperation = await Mediator.Send(new GetOperationBalanceQuantityQuery
+            {
+                OperationId = selectedOperation.Value
+            });
+    }
+
+    async Task UpdateQuantity()
+    {
+        if (!selectedQuantity.HasValue)
+        {
+            ToastService.Error("Please choose at least one size.");
+            return;
+        }
+
+        if (!selectedSizeId.HasValue)
+        {
+            ToastService.Error("Please choose at least one size.");
+            return;
+        }
+        await AppMediator.Send(new UpdateProductQuantityCommand
+            {
+                ProductId = selectedProductId.Value,
+                ProductQuantity = new List<ProductInstanceDetailDto>
+                {
+                    new()
+                    {
+                        Quantity = selectedQuantity.Value,
+                        SizeId = selectedSizeId.Value
+                    }
+                }
+            })
+        .OnSuccess(async data =>
+        {
+            ToastService.Success("Quantites for given sizes updated successfully.");
+
+            dailyOperation.VariantsPerOperation = await Mediator.Send(new GetOperationBalanceQuantityQuery
+                {
+                    OperationId = selectedOperationId.Value
+                });
+            showUpdateQuantityPopover = false;
+            selectedSizeId = null;
+            selectedQuantity = null;
+            selectedOperationInstanceId = null;
+
+            await InvokeAsync(StateHasChanged);
+
+        })
+        .OnError(err =>
+        {
+            ToastService.Error(err.Message);
+        });
     }
 
     void OnEditFormProductSelect(int? selectedProduct)
@@ -355,22 +462,19 @@
         }
     }
 
-    void ResetDetails()
+    async Task ResetDetails()
     {
         dailyOperation = new();
         addOperationForm.ResetValidation();
-        dailyOperation.VariantsPerOperation = GetSelectedProductVariants(dailyOperation.ProductId);
+        dailyOperation.VariantsPerOperation = await GetSelectedProductVariants();
     }
 
-    List<OperaitonVariantDto> GetSelectedProductVariants(int? productId)
+    async Task<List<OperaitonVariantDto>> GetSelectedProductVariants()
     {
-        return Products.FirstOrDefault(x => x.ProductId == productId)
-            ?.Variants?.Select(x => new OperaitonVariantDto
-                {
-                    OperationInstanceId = x.VariantId,
-                    Quantity = 0,
-                    IsChecked = false
-                })?.ToList() ?? new();
+        return await Mediator.Send(new GetOperationBalanceQuantityQuery
+            {
+                OperationId = selectedOperationId.Value
+            });
     }
 
     async Task SubmitDetails()
@@ -386,18 +490,18 @@
                     await InvokeAsync(StateHasChanged);
                     OperationItems = await Mediator.Send(BuildFilterDto());
 
-                    await InvokeAsync(() =>
+                    await InvokeAsync(async () =>
                     {
                         var lastEmployeeSelected = dailyOperation.WorkedBy;
                         var lastProductSelected = dailyOperation.ProductId;
-                        var lastDataSelected = dailyOperation.WorkedOn;
+                        var lastDateSelected = dailyOperation.WorkedOn;
                         ResetDetails();
 
                         // Reset the employee and product selected with last submoitted values
                         dailyOperation.WorkedBy = lastEmployeeSelected;
                         dailyOperation.ProductId = lastProductSelected;
-                        dailyOperation.WorkedOn = lastDataSelected;
-                        dailyOperation.VariantsPerOperation = GetSelectedProductVariants(lastProductSelected);
+                        dailyOperation.WorkedOn = lastDateSelected;
+                        dailyOperation.VariantsPerOperation = await GetSelectedProductVariants();
                         StateHasChanged();
                     });
                 })
@@ -511,6 +615,32 @@
             {
                 Id = workHistoryId
             });
+    }
+
+    async Task OnWorkRecordDelete(int workRecordId)
+    {
+        bool? delete = await DialogService.ShowMessageBox("Confirm"
+            , "Are you sure you want to delete this record?"
+            , yesText: "Delete"
+            , cancelText: "Cancel",
+            options: AppUIConstant.TitleDialogOption);
+        if (delete == true)
+        {
+            await AppMediator.Send(new DeleteDailyOperationCommand
+                {
+                    Id = workRecordId
+                })
+            .OnSuccess(async (data) =>
+            {
+                ToastService.Success("Work record deleted successfully.");
+                OperationItems = await Mediator.Send(BuildFilterDto());
+                await InvokeAsync(StateHasChanged);
+            })
+            .OnError((err) =>
+            {
+                ToastService.Error(err.Message);
+            });
+        }
     }
 
     async Task<string> ExportDailyOperations()

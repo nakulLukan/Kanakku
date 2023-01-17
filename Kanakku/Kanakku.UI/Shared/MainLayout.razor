@@ -79,12 +79,16 @@
     {
         try
         {
+#if DEBUG
+        return true;
+#endif
             var authInfo = await GeneralApi.GetAuthenticationInfo();
             if (!authInfo.CanUseApplication)
             {
                 throw new AppException("Application not enabled to use.");
             }
 
+            Log.Logger.Information("Application enabled to use.");
             return true;
         }
         catch (Exception e)

@@ -21,7 +21,7 @@ namespace Kanakku.Application.Requests.Product
         public async Task<ProductMappingDto[]> Handle(ProductMappingQuery request, CancellationToken cancellationToken)
         {
             return await appDbContext.Products.Where(x => x.IsActive)
-                .OrderBy(x=>x.ShortCode)
+                .OrderBy(x => x.ShortCode)
                 .Select(x => new ProductMappingDto
                 {
                     ProductId = x.Id,
@@ -32,7 +32,14 @@ namespace Kanakku.Application.Requests.Product
                         .Select(y => new VariantMappingDto
                         {
                             VariantId = y.Id,
-                            SizeName = y.ProductSize.Size
+                            SizeName = y.ProductSize.Size,
+                            SizeId = y.ProductSize.Id,
+                            ProductWorkInstanceQtyDetails = y.ProductWorkInstances.Select(z => new ProductWorkInstanceQtyDetailDto
+                            {
+                                Id = z.Id,
+                                NetQuantity = z.NetQuantity,
+                                WorkId = z.WorkId,
+                            }).ToArray()
                         }).ToArray(),
                     Operations = x.Works.OrderBy(x => x.Name).Select(y => new OperationMappingDto
                     {

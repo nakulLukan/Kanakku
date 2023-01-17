@@ -19,6 +19,9 @@ public class OperaitonVariantDto
     public int OperationInstanceId { get; set; }
     public int Quantity { get; set; }
     public bool IsChecked { get; set; }
+    public int? NetQuantity { get; set; }
+    public string SizeName { get; set; }
+    public int SizeId { get; set; }
 }
 
 public class DailyOperationDtoValidator : AppAbstractValidator<DailyOperationDto>

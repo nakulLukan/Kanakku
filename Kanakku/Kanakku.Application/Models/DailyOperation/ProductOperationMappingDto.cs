@@ -18,5 +18,14 @@
     {
         public int VariantId { get; set; }
         public string SizeName { get; set; }
+        public int SizeId { get; set; }
+        public ProductWorkInstanceQtyDetailDto[] ProductWorkInstanceQtyDetails { get; set; }
+    }
+
+    public class ProductWorkInstanceQtyDetailDto
+    {
+        public int Id { get; set; }
+        public int NetQuantity { get; set; }
+        public int WorkId { get; set; }
     }
 }

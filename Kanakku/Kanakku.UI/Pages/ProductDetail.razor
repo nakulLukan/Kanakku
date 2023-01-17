@@ -27,19 +27,32 @@
                       T="WorkDto" Dense="true">
                     <ToolBarContent>
                         <div class="d-flex flex-row justify-space-between w-100">
-                            <MudText Typo="Typo.h6">@($"{productDetails.Name} ({productDetails.ShortCode})")</MudText>
-                            <MudStack Row="true" Spacing="1">
+                            <MudStack Spacing="2" Row="true">
                                 <MudItem>
-                                    <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> addOperationDialogVisible = true)">Add Operation</MudButton>
-                                </MudItem>
-                                <MudItem>
-                                    <ExportButton OnClickAction="(()=> Mediator.Send(new ProductDetailExportCommand()
-                                        {
-                                            ProductId = ProductId
-                                        }))" />
-                                </MudItem>
-                            </MudStack>
-                        </div>
+                                    <MudText Typo="Typo.h6">@($"{productDetails.Name} ({productDetails.ShortCode})")</MudText>
+
+                                    </MudItem>
+                                    <MudItem>
+                                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                               Size="Size.Small"
+                                               Variant="MudBlazor.Variant.Outlined"
+                                               OnClick="OnProductNameUpdate">
+                                        </MudIconButton>
+                                    </MudItem>
+
+                                </MudStack>
+                                <MudStack Row="true" Spacing="1">
+                                    <MudItem>
+                                        <MudButton Class="ms-5" Color="Color.Primary" OnClick="@(()=> addOperationDialogVisible = true)">Add Operation</MudButton>
+                                    </MudItem>
+                                    <MudItem>
+                                        <ExportButton OnClickAction="(()=> Mediator.Send(new ProductDetailExportCommand()
+                                    {
+                                        ProductId = ProductId
+                                    }))" />
+                                    </MudItem>
+                                </MudStack>
+                            </div>
                         </ToolBarContent>
                         <HeaderContent>
                             <MudTh Style="width: 10px;">S/N</MudTh>
@@ -224,6 +237,19 @@ FullScreen = true,
         </MudForm>
     </DialogContent>
 </MudDialog>
+
+@*Product name update message box*@
+<MudMessageBox @ref="prodNameUpdateMb" Title="Update product details" CancelText="Cancel">
+    <MessageContent>
+        <MudTextField T="string" Variant="MudBlazor.Variant.Filled" Label="Product Name"
+                      @bind-Value="prodNewName" Required=true></MudTextField>
+        <MudTextField T="string" Variant="MudBlazor.Variant.Filled" Label="Short Code"
+                      @bind-Value="prodNewShortCode" Required=true></MudTextField>
+    </MessageContent>
+    <YesButton>
+        <MudButton Variant="MudBlazor.Variant.Filled" Color="Color.Primary" ButtonType="ButtonType.Submit">Update</MudButton>
+    </YesButton>
+</MudMessageBox>
 @code {
 
     [Parameter]
@@ -246,6 +272,10 @@ FullScreen = true,
     WorkDto OperationReset { get; set; } = new();
     bool addOperationDialogVisible = false;
     bool editOperationDialogVisible = false;
+
+    MudMessageBox prodNameUpdateMb;
+    string prodNewName = string.Empty;
+    string prodNewShortCode = string.Empty;
 
     protected override void OnInitialized()
     {
@@ -493,5 +523,27 @@ FullScreen = true,
         OperationReset = selectedItem.Clone();
         editOperationDialogVisible = true;
         StateHasChanged();
+    }
+
+    async Task OnProductNameUpdate()
+    {
+        prodNewName = productDetails.Name;
+        prodNewShortCode = productDetails.ShortCode;
+        bool? update = await prodNameUpdateMb.Show(AppUIConstant.TitleDialogOption);
+        if (update == true)
+        {
+            await AppMediator.Send(new UpdateProductNameCommand
+                {
+                    ProductId = ProductId,
+                    NewName = prodNewName
+                })
+            .OnSuccess(async (data) =>
+            {
+                ToastService.Success("Product name updated successfully");
+                productDetails.Name = prodNewName;
+                productDetails.ShortCode = prodNewShortCode;
+                await InvokeAsync(StateHasChanged);
+            });
+        }
     }
 }
