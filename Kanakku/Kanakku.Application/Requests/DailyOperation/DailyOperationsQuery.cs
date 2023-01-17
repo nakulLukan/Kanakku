@@ -36,7 +36,7 @@ namespace Kanakku.Application.Requests.DailyOperation
             if (request.WorkedTo.HasValue)
             {
                 request.WorkedTo = request.WorkedTo.Value.ToDateTimeKind();
-                baseLinq = baseLinq.Where(x => x.WorkedOn < request.WorkedTo.Value);
+                baseLinq = baseLinq.Where(x => x.WorkedOn <= request.WorkedTo.Value);
             }
 
             if (request.QuickFilter.HasValue)

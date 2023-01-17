@@ -2,7 +2,7 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Kanakku.Application.Models.User;
+namespace Kanakku.Application.Requests.User;
 
 public class GetUserSalaryPerMonthQuery : IRequest<float>
 {
@@ -21,11 +21,11 @@ public class GetUserSalaryPerMonthQueryHandler : IRequestHandler<GetUserSalaryPe
 
     public async Task<float> Handle(GetUserSalaryPerMonthQuery request, CancellationToken cancellationToken)
     {
-        var salaryPeriod = new DateTime(request.SalaryMonth.Year, request.SalaryMonth.Month, 1, 0, 0, 0, DateTimeKind.Local).ToUniversalTime();
+        var salaryPeriod = new DateTime(request.SalaryMonth.Year, request.SalaryMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc).ToUniversalTime();
 
         float salary = await appDbContext.WorkHistories
             .Where(x => x.EmployeeId == request.EmpId)
-            .Where(x => x.WorkedOn >= salaryPeriod && x.WorkedOn < salaryPeriod.AddMonths(1))
+            .Where(x => x.WorkedOn >= salaryPeriod && x.WorkedOn <=salaryPeriod.AddMonths(1))
             .SumAsync(x => x.Quantity * x.Work.Cost, cancellationToken);
 
         return salary;
