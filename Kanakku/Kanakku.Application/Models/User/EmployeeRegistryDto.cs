@@ -3,6 +3,7 @@
     public class EmployeeRegistryDto
     {
         public int Id { get; set; }
+        public int RowNumber { get; set; }
         public string EmpName { get; set; }
         public int EmpCode { get; set; }
         public DateTime SalaryMonth { get; set; }

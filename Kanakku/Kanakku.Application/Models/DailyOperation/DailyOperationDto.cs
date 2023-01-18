@@ -22,6 +22,7 @@ public class OperaitonVariantDto
     public int? NetQuantity { get; set; }
     public string SizeName { get; set; }
     public int SizeId { get; set; }
+    public int ProductInstanceId { get; set; }
 }
 
 public class DailyOperationDtoValidator : AppAbstractValidator<DailyOperationDto>

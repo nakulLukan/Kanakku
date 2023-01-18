@@ -28,7 +28,7 @@ public class GetDailyOperationDetailByIdQueryHandler : IRequestHandler<GetDailyO
             WorkedBy = x.EmployeeId,
             WorkedOn = x.WorkedOn,
             Quantity = x.Quantity,
-            VariantId = x.VariantId
+            VariantId = x.VariantId,
         })
             .FirstAsync(x => x.Id == request.Id, cancellationToken);
         result.WorkedTime = result.WorkedOn.Value.ToLocalTime().TimeOfDay;

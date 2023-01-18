@@ -19,7 +19,7 @@ public class EmployeeRegistryQueryHandler : IRequestHandler<EmployeeRegistryQuer
         _appDbContext = appDbContext;
     }
 
-    public Task<EmployeeRegistryDto[]> Handle(EmployeeRegistryQuery request, CancellationToken cancellationToken)
+    public async Task<EmployeeRegistryDto[]> Handle(EmployeeRegistryQuery request, CancellationToken cancellationToken)
     {
         request.From = request.From.ToDateTimeKind();
         request.To = request.To.ToDateTimeKind();
@@ -54,9 +54,9 @@ public class EmployeeRegistryQueryHandler : IRequestHandler<EmployeeRegistryQuer
             linq = linq.Where(x => request.Designations.Contains(x.Employee.DesignationId));
         }
 
-        return linq
+        var result = await linq
             .OrderByDescending(x => x.Period)
-            .ThenByDescending(x => x.ModifiedOn)
+                .ThenByDescending(x => x.ModifiedOn)
             .Select(x => new EmployeeRegistryDto
             {
                 DaysPresent = x.DaysPresent,
@@ -65,8 +65,12 @@ public class EmployeeRegistryQueryHandler : IRequestHandler<EmployeeRegistryQuer
                 Id = x.Id,
                 Salary = x.Salary,
                 SalaryMonth = x.Period,
-                Bonus = x.Bonus
+                Bonus = x.Bonus,
             })
             .ToArrayAsync(cancellationToken);
+
+        int row = 1;
+        foreach (var res in result) res.RowNumber = row++;
+        return result;
     }
 }

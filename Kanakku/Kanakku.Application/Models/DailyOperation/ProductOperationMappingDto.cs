@@ -4,7 +4,6 @@
     {
         public int ProductId { get; set; }
         public string ProductName { get; set; }
-        public VariantMappingDto[] Variants { get; set; }
         public OperationMappingDto[] Operations { get; set; }
     }
 

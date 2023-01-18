@@ -95,7 +95,7 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
             Data = data.ExportData,
             ColumnMetaData = columnMetaData,
             FooterMetaData = footerMetaData,
-            ShowSerialNumber = false,
+            ShowSerialNumber = true,
             SubTitle = data.SubTitle,
             Title = title,
         };
@@ -147,7 +147,7 @@ public class SalaryHistoryExportCommandHandler : IRequestHandler<EmployeeRegistr
                 EmpName = x.EmpName,
                 DaysPresent = x.DaysPresent,
                 EmpCode = x.EmpCode,
-                Bonus = x.Bonus.ToCurrencyAsAscii()
+                Bonus = x.Bonus.ToCurrencyAsAscii(),
             })
             .ToList(), totalAmount, totalBonus, subTitle.ToString());
     }

@@ -98,6 +98,7 @@
                 </div>
             </ToolBarContent>
             <HeaderContent>
+                <MudTh Style="width: 10px;">S/N</MudTh>
                 <MudTh>Employee Name</MudTh>
                 <MudTh>Employee Code</MudTh>
                 <MudTh>Period</MudTh>
@@ -110,6 +111,7 @@
                 <MudTh>Action</MudTh>
             </HeaderContent>
             <RowTemplate>
+                <MudTd DataLabel="S/N">@context.RowNumber</MudTd>
                 <MudTd DataLabel="Employee Name">@context.EmpName</MudTd>
                 <MudTd DataLabel="Employee Code">@context.EmpCode</MudTd>
                 <MudTd DataLabel="Period">@context.SalaryMonth.ToString("MMM/yyyy")</MudTd>

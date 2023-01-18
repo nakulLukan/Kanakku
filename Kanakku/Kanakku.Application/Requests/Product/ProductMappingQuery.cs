@@ -26,21 +26,6 @@ namespace Kanakku.Application.Requests.Product
                 {
                     ProductId = x.Id,
                     ProductName = $"{x.ShortCode} - {x.Name}",
-                    Variants = x.ProductInstances
-                        .OrderBy(x => x.ProductSize.Master.Order)
-                        .ThenBy(x => x.ProductSize.Order)
-                        .Select(y => new VariantMappingDto
-                        {
-                            VariantId = y.Id,
-                            SizeName = y.ProductSize.Size,
-                            SizeId = y.ProductSize.Id,
-                            ProductWorkInstanceQtyDetails = y.ProductWorkInstances.Select(z => new ProductWorkInstanceQtyDetailDto
-                            {
-                                Id = z.Id,
-                                NetQuantity = z.NetQuantity,
-                                WorkId = z.WorkId,
-                            }).ToArray()
-                        }).ToArray(),
                     Operations = x.Works.OrderBy(x => x.Name).Select(y => new OperationMappingDto
                     {
                         OperationId = y.Id,

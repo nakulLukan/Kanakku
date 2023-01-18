@@ -26,7 +26,7 @@ public class EditDailyOperationDetailHandler : IRequestHandler<EditDailyOperatio
         var operationDetail = await appDbContext.WorkHistories.AsTracking()
             .FirstAsync(x => x.Id == request.Id, cancellationToken);
         var workInstance = await appDbContext.ProductWorkInstances.AsTracking()
-            .FirstAsync(x => x.ProductInstanceId == request.VariantId.Value && x.WorkId == request.OperationId, cancellationToken);
+            .FirstAsync(x => x.ProductInstanceId == request.VariantId && x.WorkId == request.OperationId, cancellationToken);
 
         var userId = await sessionContext.GetUserId();
         operationDetail.WorkedOn = request.WorkedOn.Value.Date.Add(request.WorkedTime.Value).ToUniversalTime();

@@ -290,7 +290,7 @@
                                    For="@(() => editDailyOperation.VariantId)" Dense="true" Variant="Variant.Outlined" Margin="Margin.Dense">
                             @foreach (var variant in Variants)
                             {
-                                <MudSelectItem Value="variant.VariantId" T="int?">@variant.SizeName</MudSelectItem>
+                                <MudSelectItem Value="variant.ProductInstanceId" T="int?">@variant.SizeName</MudSelectItem>
                             }
                         </MudSelect>
                     </MudItem>
@@ -322,10 +322,10 @@
     DailyOperationDetailDto editDailyOperation { get; set; } = new();
     MudForm editOperationForm;
     DailyOperationDetailDtoValidator editDailyOperationValidator = new();
+    List<OperaitonVariantDto> Variants = new();
 
     ProductMappingDto[] Products = new ProductMappingDto[0];
     OperationMappingDto[] Operations = new OperationMappingDto[0];
-    VariantMappingDto[] Variants = new VariantMappingDto[0];
     EmployeeMappingDto[] Employees = new EmployeeMappingDto[0];
     OperationItemDto[] OperationItems = new OperationItemDto[0];
     DailyOperationFilterDto filter = new();
@@ -447,13 +447,12 @@
         });
     }
 
-    void OnEditFormProductSelect(int? selectedProduct)
+    async Task OnEditFormProductSelect(int? selectedProduct)
     {
         var prod = Products.FirstOrDefault(x => x.ProductId == selectedProduct);
         Operations = prod?.Operations
             ?? new OperationMappingDto[0];
-        Variants = prod?.Variants
-            ?? new VariantMappingDto[0];
+        Variants = await GetSelectedProductVariants(editDailyOperation.OperationId.Value);
         if (!Operations.Any(x => x.OperationId == editDailyOperation.OperationId))
         {
             editDailyOperation.OperationId = null;
@@ -469,11 +468,15 @@
         dailyOperation.VariantsPerOperation = await GetSelectedProductVariants();
     }
 
-    async Task<List<OperaitonVariantDto>> GetSelectedProductVariants()
+    async Task<List<OperaitonVariantDto>> GetSelectedProductVariants(int? operationId = null)
     {
+        if (!operationId.HasValue)
+        {
+            operationId = selectedOperationId.Value;
+        }
         return await Mediator.Send(new GetOperationBalanceQuantityQuery
             {
-                OperationId = selectedOperationId.Value
+                OperationId = operationId.Value
             });
     }
 
@@ -495,7 +498,7 @@
                         var lastEmployeeSelected = dailyOperation.WorkedBy;
                         var lastProductSelected = dailyOperation.ProductId;
                         var lastDateSelected = dailyOperation.WorkedOn;
-                        ResetDetails();
+                        await ResetDetails();
 
                         // Reset the employee and product selected with last submoitted values
                         dailyOperation.WorkedBy = lastEmployeeSelected;

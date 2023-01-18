@@ -27,7 +27,8 @@ public class GetOperationBalanceQuantityQueryHandler : IRequestHandler<GetOperat
                 NetQuantity = x.NetQuantity,
                 OperationInstanceId = x.Id,
                 SizeName = x.ProductInstance.ProductSize.Size,
-                SizeId = x.ProductInstance.ProductSizeId
+                SizeId = x.ProductInstance.ProductSizeId,
+                ProductInstanceId = x.ProductInstanceId,
             }).ToListAsync(cancellationToken);
     }
 }
