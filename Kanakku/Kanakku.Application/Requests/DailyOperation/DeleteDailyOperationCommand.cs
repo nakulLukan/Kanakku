@@ -38,6 +38,17 @@ public class DeleteDailyOperationCommandHandler : IRequestHandler<DeleteDailyOpe
             throw new AppException("Could not find the work record. Please refresh your screen and try again.");
         }
 
+        var quantity = work.Quantity;
+        var workId = work.WorkId;
+        var variantId = work.VariantId;
+
+        var variant = await _dbContext.ProductWorkInstances.AsTracking()
+            .FirstAsync(x => x.ProductInstanceId == variantId
+                && x.WorkId == workId);
+
+        variant.NetQuantity += quantity;
+        Log.Logger.Information("Variant #{variantName} quantity updated to {quantity}", variant.Id, variant.NetQuantity);
+
         _dbContext.WorkHistories.Remove(work);
         await _dbContext.SaveAsync(cancellationToken);
 

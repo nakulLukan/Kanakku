@@ -11,6 +11,7 @@ public class UpdateProductQuantityCommand : IRequest<bool>
 {
     public int ProductId { get; set; }
     public List<ProductInstanceDetailDto> ProductQuantity { get; set; }
+    public bool AddToExistingQuantity { get; set; }
 }
 
 public class UpdateProductQuantityCommandHandler : IRequestHandler<UpdateProductQuantityCommand, bool>
@@ -34,8 +35,10 @@ public class UpdateProductQuantityCommandHandler : IRequestHandler<UpdateProduct
         foreach (var productInstance in currentProductVariants)
         {
             var quantity = request.ProductQuantity.First(x => x.SizeId == productInstance.ProductSizeId).Quantity;
-            productInstance.Quantity = quantity;
-            productInstance.ProductWorkInstances.ForEach(x => x.NetQuantity = quantity);
+            var newQuantity = request.AddToExistingQuantity ? productInstance.Quantity + quantity
+                : quantity;
+            productInstance.Quantity = newQuantity;
+            productInstance.ProductWorkInstances.ForEach(x => x.NetQuantity = newQuantity);
         }
 
         var existingProductSizes = currentProductVariants.Select(x => x.ProductSizeId).ToArray();

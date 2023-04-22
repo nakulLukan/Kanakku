@@ -415,6 +415,7 @@
         }
         await AppMediator.Send(new UpdateProductQuantityCommand
             {
+                AddToExistingQuantity = true,
                 ProductId = selectedProductId.Value,
                 ProductQuantity = new List<ProductInstanceDetailDto>
                 {
@@ -465,7 +466,11 @@
     {
         dailyOperation = new();
         addOperationForm.ResetValidation();
-        dailyOperation.VariantsPerOperation = await GetSelectedProductVariants();
+
+        if (selectedOperationId != null)
+        {
+            dailyOperation.VariantsPerOperation = await GetSelectedProductVariants();
+        }
     }
 
     async Task<List<OperaitonVariantDto>> GetSelectedProductVariants(int? operationId = null)
