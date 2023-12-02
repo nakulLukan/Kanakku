@@ -1,0 +1,37 @@
+﻿@page "/"
+@using Kanakku.Application.Contracts.Storage
+@using Kanakku.Shared
+@using MudBlazor;
+@inject Kanakku.Application.Contracts.Storage.IAppSecureStorage AppSecureStorage
+
+@if (AppInMemoryStore.IsLoggedIn)
+{
+    <div class="d-flex flex-column">
+        <div class="w-100 d-flex flex-row justify-space-between mb-5">
+            <h5>Daily Operation Details</h5>
+            @*<div>
+        <MudSelect Dense="false" T="DailyOperationLayout" Label="View" Variant="Variant.Outlined"
+        @bind-Value="@this.viewLayout">
+        <MudSelectItem Value="@(DailyOperationLayout.ListView)">List View</MudSelectItem>
+        <MudSelectItem Value="@(DailyOperationLayout.Tabular)">Tabular</MudSelectItem>
+        </MudSelect>
+        </div>*@
+        </div>
+        @if (viewLayout == DailyOperationLayout.ListView)
+        {
+            <Kanakku.App.Components.Shared.DailyOperationListView></Kanakku.App.Components.Shared.DailyOperationListView>
+        }
+        else if (viewLayout == DailyOperationLayout.Tabular)
+        {
+            <span>Tabular view</span>
+        }
+    </div>
+}
+
+@code {
+    DailyOperationLayout viewLayout = DailyOperationLayout.ListView;
+    protected override async Task OnInitializedAsync()
+    {
+        AppInMemoryStore.IsLoggedIn = await AppSecureStorage.GetAsync<bool>(SecureStorageKey.IS_LOGGED);
+    }
+}

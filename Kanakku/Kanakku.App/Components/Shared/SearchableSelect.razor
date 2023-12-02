@@ -1,0 +1,64 @@
+﻿@using System.Linq.Expressions
+@typeparam T
+<MudAutocomplete T="T" Label="@Label"
+                 SearchFunc="TextChanged" ToStringFunc="(x=> Values.FirstOrDefault(y=>y.Item1.Equals(x)).Item2 ?? default)"
+                 Variant="Variant.Outlined"
+                 Margin="Margin.Dense"
+                 Dense="true"
+                 @ref="@mudAuto"
+                 @bind-Value=SelectedItem
+                 For="For">
+</MudAutocomplete>
+
+@code {
+    MudAutocomplete<T> mudAuto;
+
+    [Parameter]
+    public string Label { get; set; }
+
+    [Parameter]
+    public List<(T, string)> Values { get; set; }
+
+    [Parameter]
+    public EventCallback<T> ValueChanged { get; set; }
+
+    T _selectedItem { get; set; }
+    [Parameter]
+    public T SelectedItem
+    {
+        get => _selectedItem;
+        set
+        {
+            if (_selectedItem.Equals(value))
+            {
+                return;
+            };
+            if (value is null)
+            {
+                mudAuto.Value = default;
+                mudAuto.Clear();
+            }
+            _selectedItem = value;
+
+            SelectedItemChanged.InvokeAsync(value);
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<T> SelectedItemChanged { get; set; }
+
+    [Parameter]
+    public Expression<Func<T>> For { get; set; }
+
+    Task<IEnumerable<T>> TextChanged(string searchPattern)
+    {
+        if (string.IsNullOrEmpty(searchPattern))
+        {
+            return Task.FromResult(Values.Select(x => x.Item1).AsEnumerable());
+        }
+
+        var subset = Values.Where(x => x.Item2.ToLower().Contains(searchPattern.ToLower().Trim())).ToArray();
+
+        return Task.FromResult(subset.Select(x => x.Item1).AsEnumerable());
+    }
+}

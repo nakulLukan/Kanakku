@@ -1,0 +1,80 @@
+﻿@page "/signup"
+@layout LoginLayout
+
+@using Kanakku.App.Components.Layout
+@using Kanakku.Application.Contracts.Presentation
+@using Kanakku.Application.Models.User
+@using Kanakku.Application.Requests.User
+@using Kanakku.App.Contracts.Event
+@inject NavigationManager NavigationManager;
+@inject IAppMediator AppMediator
+@inject IToastService ToastService
+
+<div class="d-flex justify-space-around vh-100 align-items-center">
+    <MudCard Class="bg-white" Elevation="5">
+        <MudCardHeader>
+            <div class="d-flex flex-column">
+                <MudText Typo="Typo.h4" Class="mb-3">Create an account</MudText>
+                <MudText Typo="Typo.caption">Create an account choosing unique username and password.</MudText>
+                <MudDivider DividerType="DividerType.Middle"></MudDivider>
+            </div>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudForm Model="model" Validation="validator.ValidateValue" @ref="signupForm">
+                <MudTextField T="string" Variant="Variant.Outlined" Label="Username"
+                              For="(() => model.Username)"
+                              @bind-Value="model.Username"></MudTextField>
+                <MudTextField T="string" Variant="Variant.Outlined" Label="Password"
+                              For="(() => model.Password)"
+                              @bind-Value="model.Password"
+                              InputType="InputType.Password"></MudTextField>
+                <MudTextField T="string" Variant="Variant.Outlined" Label="Confirm Password"
+                              For="(() => model.ConfirmPassword)"
+                              @bind-Value="model.ConfirmPassword"
+                              InputType="InputType.Password"></MudTextField>
+            </MudForm>
+        </MudCardContent>
+        <MudCardActions>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="CreateAccount" Class="w-100">Create Account</MudButton>
+                </MudItem>
+                <MudItem xs="12" Class="text-center">
+                    <MudLink Typo="Typo.subtitle2" Color="Color.Dark" OnClick="CreateAccount" Href="login">go back</MudLink>
+                </MudItem>
+            </MudGrid>
+        </MudCardActions>
+    </MudCard>
+</div>
+@code {
+    SignupDto model = new();
+    SignupDtoValidator validator = new();
+    MudForm signupForm;
+
+    bool hasError = false;
+    string errorMessage = string.Empty;
+
+    public async Task CreateAccount()
+    {
+        await signupForm.Validate();
+        if (!signupForm.IsValid)
+        {
+            return;
+        }
+        await AppMediator.Send(new CreateUserAccountCommand()
+            {
+                Username = model.Username,
+                Password = model.Password,
+                ConfirmPassword = model.ConfirmPassword
+            })
+            .OnSuccess(data =>
+            {
+                NavigationManager.NavigateTo("login");
+                ToastService.Success("User account created successfully. Please login with your credentials.");
+            })
+            .OnError(err =>
+            {
+                ToastService.Error(err.Message);
+            });
+    }
+}

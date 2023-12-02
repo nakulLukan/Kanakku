@@ -1,0 +1,92 @@
+﻿@using Kanakku.Application.Contracts.Presentation
+@using Kanakku.Application.Requests.Attachment
+@using Kanakku.App.Contracts.Event
+@using MediatR
+@inject IAppMediator AppMediator
+@inject IMediator Mediator
+@inject IToastService ToastService
+<div>
+    <InputFile id="@Id" hidden multiple accept=".jpg, .jpeg, .png"
+               OnChange="OnFileChange"
+               @ref="inputFile" />
+    <MudButton HtmlTag="label"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               StartIcon="@Icons.Filled.CloudUpload"
+               for="@Id">
+        @DisplayName
+    </MudButton>
+    <MudText>@fileName</MudText>
+</div>
+@code {
+    [Parameter] public string Id { get; set; }
+    [Parameter] public string DisplayName { get; set; }
+    [Parameter] public EventCallback<IBrowserFile> OnFileSelect { get; set; }
+    int? _resourceId { get; set; }
+
+    [Parameter]
+    public int? ResourceId
+    {
+        get => _resourceId;
+        set
+        {
+            if (_resourceId == value) return;
+
+            _resourceId = value;
+            ResourceIdChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int?> ResourceIdChanged { get; set; }
+
+    string fileName = "Choose a file";
+    InputFile inputFile;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ResourceId.HasValue)
+        {
+            await AppMediator.Send(new ResourceQuery
+                {
+                    ResourceId = ResourceId.Value
+                })
+            .OnSuccess(data =>
+            {
+                fileName = data.FileFullName;
+            });
+        }
+    }
+
+    async Task OnFileChange(InputFileChangeEventArgs eventArg)
+    {
+        await AppMediator.Send(new ResourceCommand
+            {
+                Id = 0,
+                DataStream = eventArg.File.OpenReadStream(maxAllowedSize: Constant.FILE_PICKER_MAX_LENGTH),
+                FileFullName = eventArg.File.Name
+            })
+            .OnSuccess(async data =>
+            {
+                await InvokeAsync(() =>
+                {
+                    ResourceId = data.Id;
+                    fileName = eventArg.File.Name;
+                    StateHasChanged();
+                });
+            })
+            .OnError(err =>
+            {
+                ToastService.Error(err.Message);
+            })
+            .OnFormError(err =>
+            {
+                foreach (var er in err)
+                {
+                    ToastService.Error(er.Value[0]);
+                }
+            });
+        if (OnFileSelect.HasDelegate)
+            await OnFileSelect.InvokeAsync(eventArg.File);
+    }
+}

@@ -1,0 +1,48 @@
+﻿<style>
+    .relative {
+        position: relative;
+        left: 0px;
+    }
+
+    .absolute {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+</style>
+<div>
+    <div class="relative">
+        <MudIconButton Icon="@(Icons.Material.Filled.Download )"
+                       Color="Color.Tertiary" Variant="Variant.Filled"
+                       OnClick="Run" Class="z-0" Disabled="isLoading">
+
+        </MudIconButton>
+        @if (isLoading)
+        {
+            <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="absolute z-100" />
+        }
+    </div>
+</div>
+
+
+
+
+@code {
+    [Parameter]
+    public Func<Task<string>> OnClickAction { get; set; }
+
+    bool isLoading = false;
+
+    async Task Run()
+    {
+        isLoading = true;
+        StateHasChanged();
+        var filePath = await OnClickAction();
+        Uri uri = new Uri(filePath);
+        await Browser.Default.OpenAsync(uri, BrowserLaunchMode.SystemPreferred);
+        isLoading = false;
+    }
+}

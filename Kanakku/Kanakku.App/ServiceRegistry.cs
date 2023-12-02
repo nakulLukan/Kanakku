@@ -7,17 +7,17 @@ using Kanakku.Application.Models.DailyOperation;
 using Kanakku.Application.Models.User;
 using Kanakku.Application.Requests.DailyOperation;
 using Kanakku.Application.Requests.User;
-using Kanakku.UI.Contracts.Event;
-using Kanakku.UI.Contracts.StaticApi;
-using Kanakku.UI.Impl.Essential;
-using Kanakku.UI.Impl.Event;
-using Kanakku.UI.Impl.Presentation;
-using Kanakku.UI.Impl.Storage;
+using Kanakku.App.Contracts.Event;
+using Kanakku.App.Contracts.StaticApi;
+using Kanakku.App.Impl.Essential;
+using Kanakku.App.Impl.Event;
+using Kanakku.App.Impl.Presentation;
+using Kanakku.App.Impl.Storage;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Refit;
 
-namespace Kanakku.UI;
+namespace Kanakku.App;
 
 public static class ServiceRegistry
 {
@@ -29,7 +29,7 @@ public static class ServiceRegistry
         serviceCollection.AddSingleton<ISessionContext, SessionContext>();
         serviceCollection.AddSingleton<IPermissionService, PermissionService>();
         serviceCollection.AddTransient<IAppMediator, AppMediator>();
-        serviceCollection.AddMediatR(typeof(Application.ServiceRegistry).Assembly);
+        serviceCollection.AddMediatR(cfg=> cfg.RegisterServicesFromAssembly(typeof(Application.ServiceRegistry).Assembly));
         serviceCollection.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
         serviceCollection.AddValidatorsFromAssembly(typeof(Application.ServiceRegistry).Assembly);
 
