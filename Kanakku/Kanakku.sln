@@ -2,8 +2,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31611.283
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.UI", "Kanakku.UI\Kanakku.UI.csproj", "{1516CAD5-8940-40F1-8202-69E537C3FE8C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.Shared", "Kanakku.Shared\Kanakku.Shared.csproj", "{3DF7C0D6-78DE-4CB3-9925-12E90105D002}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.Infrastructure", "Kanakku.Infrastructure\Kanakku.Infrastructure.csproj", "{850A20BF-159C-4871-A48C-05CBE787192F}"
@@ -14,18 +12,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.Domain", "Kanakku.D
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.StaticApi", "Kanakku.StaticApi\Kanakku.StaticApi.csproj", "{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kanakku.Web", "Kanakku.Web\Kanakku.Web.csproj", "{A08C2F8F-24B2-4387-ABFF-61A323D3BE2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1516CAD5-8940-40F1-8202-69E537C3FE8C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1516CAD5-8940-40F1-8202-69E537C3FE8C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1516CAD5-8940-40F1-8202-69E537C3FE8C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{1516CAD5-8940-40F1-8202-69E537C3FE8C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1516CAD5-8940-40F1-8202-69E537C3FE8C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1516CAD5-8940-40F1-8202-69E537C3FE8C}.Release|Any CPU.Deploy.0 = Release|Any CPU
 		{3DF7C0D6-78DE-4CB3-9925-12E90105D002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3DF7C0D6-78DE-4CB3-9925-12E90105D002}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DF7C0D6-78DE-4CB3-9925-12E90105D002}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -46,6 +40,10 @@ Global
 		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{37CDB8FC-BEBB-45A0-855C-8CC893A7F9C9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A08C2F8F-24B2-4387-ABFF-61A323D3BE2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A08C2F8F-24B2-4387-ABFF-61A323D3BE2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A08C2F8F-24B2-4387-ABFF-61A323D3BE2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A08C2F8F-24B2-4387-ABFF-61A323D3BE2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

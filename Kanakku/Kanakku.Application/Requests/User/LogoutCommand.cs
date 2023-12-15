@@ -20,8 +20,6 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, bool>
     {
         await secureStorage.SetAsync(SecureStorageKey.IS_LOGGED, false);
         await secureStorage.SetAsync(SecureStorageKey.USER_ID, Guid.Empty);
-        AppInMemoryStore.IsLoggedIn = false;
-        AppInMemoryStore.UserId = Guid.Empty;
         return true;
     }
 }

@@ -1,0 +1,23 @@
+﻿@page "/master/sizes"
+@using Kanakku.Application.Contracts.Presentation
+@using Kanakku.Application.Models.Lookup
+@using Kanakku.Application.Models.Product
+@using Kanakku.Application.Requests.Product
+@using Kanakku.UI.Contracts.Event
+@using MediatR
+@inject IMediator Mediator
+@inject IAppMediator AppMediator
+@inject IToastService ToastService;
+
+<MudGrid Spacing="3" Justify="Justify.FlexStart">
+    <MudItem xs="12" md="4">
+        <Kanakku.Web.Components.Master.SizeMaster/>
+    </MudItem>
+    <MudItem xs="12" md="4">
+        <Kanakku.Web.Components.Master.DesignationMaster/>
+    </MudItem>
+</MudGrid>
+
+@code {
+    
+}

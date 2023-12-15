@@ -1,0 +1,83 @@
+﻿@page "/login"
+@attribute [AllowAnonymous]
+@using Kanakku.Application.Contracts.Presentation
+@using Kanakku.Application.Contracts.Storage
+@using Kanakku.Application.Models.User
+@using Kanakku.Application.Requests.User
+@using Kanakku.Domain.User
+@using Kanakku.Shared
+@using Kanakku.UI.Contracts.Event
+@using Kanakku.UI.Impl.Event
+@using Kanakku.Web.Middlewares
+@using Microsoft.AspNetCore.Identity
+@layout LoginLayout
+@inject NavigationManager NavigationManager;
+@inject IAppSecureStorage AppSecureStorage;
+@inject IAppMediator AppMediator;
+@inject IToastService ToastService
+@inject SignInManager<AppUser> SignInManager
+
+<div class="d-flex justify-space-around vh-100 align-items-center">
+    <MudCard Class="bg-white" Elevation="5">
+        <MudCardHeader>
+            <div class="d-flex flex-column">
+                <MudText Typo="Typo.h4" Class="mb-3">Login</MudText>
+                <MudText Typo="Typo.caption">Sign in to application with your username and password.</MudText>
+                <MudDivider DividerType="DividerType.Middle"></MudDivider>
+            </div>
+        </MudCardHeader>
+        <MudCardContent>
+            <MudForm Model="loginModel" Validation="validator.ValidateValue" @ref="loginForm">
+                <MudTextField T="string" Variant="Variant.Outlined" Label="Username"
+                              For="(() => loginModel.Username)"
+                              @bind-Value="loginModel.Username"></MudTextField>
+                <MudTextField T="string" Variant="Variant.Outlined" Label="Password"
+                              For="(() => loginModel.Password)"
+                              @bind-Value="loginModel.Password"
+                              InputType="InputType.Password"></MudTextField>
+            </MudForm>
+        </MudCardContent>
+        <MudCardActions>
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="LoginCommand" Class="w-100">Sign-in</MudButton>
+                </MudItem>
+                <MudItem xs="12" Class="text-center">
+                    <MudLink Variant="Variant.Text" Color="Color.Dark" Href="signup">create an account</MudLink>
+                </MudItem>
+            </MudGrid>
+        </MudCardActions>
+    </MudCard>
+</div>
+
+@code {
+    LoginDto loginModel = new();
+    LoginDtoValidator validator = new();
+    MudForm loginForm;
+
+
+    public async Task LoginCommand()
+    {
+        await loginForm.Validate();
+        if (!loginForm.IsValid)
+        {
+            return;
+        }
+        await AppMediator.Send(new LoginQuery()
+            {
+                Username = loginModel.Username,
+                Password = loginModel.Password
+            })
+            .OnSuccess(data =>
+            {
+                Guid key = Guid.NewGuid();
+                AuthenticationMiddleware.Logins[key] = new LoginInfo { UserName = loginModel.Username, Password = loginModel.Password };
+                NavigationManager.NavigateTo($"/login?key={key}", true);
+            })
+            .OnError(err =>
+            {
+                ToastService.Error(err.Message);
+            });
+
+    }
+}

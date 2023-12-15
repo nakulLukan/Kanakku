@@ -19,13 +19,11 @@ public class ResourceCommandHandler : IRequestHandler<ResourceCommand, BinaryRes
 {
     private readonly IAppDbContext appDbContext;
     private readonly ISessionContext sessionContext;
-    private readonly IPermissionService permission;
 
-    public ResourceCommandHandler(IAppDbContext appDbContext, ISessionContext sessionContext, IPermissionService permission)
+    public ResourceCommandHandler(IAppDbContext appDbContext, ISessionContext sessionContext)
     {
         this.appDbContext = appDbContext;
         this.sessionContext = sessionContext;
-        this.permission = permission;
     }
 
     public async Task<BinaryResourceDto> Handle(ResourceCommand request, CancellationToken cancellationToken)
@@ -57,7 +55,6 @@ public class ResourceCommandHandler : IRequestHandler<ResourceCommand, BinaryRes
         }
 
         await appDbContext.SaveAsync(cancellationToken);
-        await permission.GetStoragePermission();
         var basePath = String.Format(DirectoryConstant.BINARY_RESOURCE_FORMAT, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
         if (!Directory.Exists(basePath))
         {

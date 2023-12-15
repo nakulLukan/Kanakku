@@ -1,4 +1,5 @@
 ﻿using Kanakku.Application.Contracts.Essential;
+using Kanakku.Shared;
 using Kanakku.Shared.Models.ExportService;
 using QuestPDF.Fluent;
 
@@ -18,6 +19,7 @@ public class ExportService : IExportService
         QuestPDF.Settings.CheckIfAllTextGlyphsAreAvailable = false;
         string path = Path.Combine(directory, fileName);
         document.GeneratePdf(path);
-        return path;
+
+        return string.Format(RouteConstant.EXPORT_PATH, "{0}", fileName);
     }
 }

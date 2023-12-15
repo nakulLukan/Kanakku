@@ -14,7 +14,6 @@ public interface IAppDbContext
     DbSet<WorkHistory> WorkHistories { get; set; }
     DbSet<LookupDetail> LookupDetails { get; set; }
     DbSet<LookupMaster> LookupMasters { get; set; }
-    DbSet<AppUser> AppUsers { get; set; }
     DbSet<Employee> Employees { get; set; }
     DbSet<ProductSize> ProductSizes { get; set; }
     DbSet<ProductInstance> ProductInstances { get; set; }

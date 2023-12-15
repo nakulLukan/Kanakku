@@ -1,9 +1,7 @@
 ﻿using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.User;
-using Kanakku.Domain.User;
 using Kanakku.Shared.Utilities;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Kanakku.Application.Requests.User;
 
@@ -28,28 +26,9 @@ public class CreateUserAccountCommandHandler : IRequestHandler<CreateUserAccount
             throw new AppException("'Password' and 'Confirm Password' should exactly match.");
         }
 
-        var isUsernameExists = await _appDbContext.AppUsers.AnyAsync(x => x.Username.ToLower() == request.Username.ToLower(), cancellationToken);
-        if (isUsernameExists)
-        {
-            throw new AppException("Another user already exists with given 'Username'");
-        }
-
-        AppUser newUser = new AppUser
-        {
-            Username = request.Username,
-            Password = request.Password,
-            IsActive = true,
-            Name = String.Empty,
-            Email = String.Empty,
-        };
-
-        _appDbContext.AppUsers.Add(newUser);
-        await _appDbContext.SaveAsync(cancellationToken);
-
         return new AppUserMinDto
         {
-            Id = newUser.Id,
-            Username = newUser.Name
+            Username = request.Username
         };
     }
 }

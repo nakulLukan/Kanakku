@@ -1,0 +1,100 @@
+﻿@using Kanakku.Application.Requests.User
+@using Kanakku.Shared
+@using Kanakku.Shared.Utilities
+@using Kanakku.UI.Contracts.Event
+@using Kanakku.UI.Contracts.StaticApi
+@using Kanakku.UI.Extensions
+@using Serilog
+@inherits LayoutComponentBase
+@inject IAppMediator AppMediator;
+@inject NavigationManager NavigationManager
+@inject Kanakku.Application.Contracts.Storage.IAppSecureStorage AppSecureStorage
+@inject NavigationManager NavigationManager;
+@inject IGeneral GeneralApi
+<MudThemeProvider />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraSmall"
+                   CloseButton="true"
+                   DisableBackdropClick="true"
+                   NoHeader="true"
+                   Position="DialogPosition.Center"
+                   CloseOnEscapeKey="true" />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudAppBar Elevation="3" Dense="true" Class="py-1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudSpacer />
+        <MudText Color="Color.Inherit" Typo="Typo.subtitle2">@welcomText</MudText>
+            <MudIconButton Icon="@Icons.Material.Rounded.Logout" Color="Color.Inherit" OnClick="Logout"></MudIconButton>
+        </MudAppBar>
+        <MudDrawer @bind-Open="_drawerOpen" Elevation="1">
+            <MudDrawerHeader>
+                <MudText Typo="Typo.h6">Kanakku</MudText>
+            </MudDrawerHeader>
+            <NavMenu />
+        </MudDrawer>
+        <MudMainContent>
+            <MudContainer MaxWidth="MaxWidth.Large" Class="pt-6 min-vh-100">
+                @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+@code {
+    bool _drawerOpen = true;
+    string welcomText = string.Empty;
+    [Inject]
+    public AuthenticationStateProvider AuthenticationState { get; set; }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    async Task Logout()
+    {
+        await AppMediator.Send(new LogoutCommand())
+        .OnSuccess(data =>
+        {
+            NavigationManager.NavigateTo("/sign-out", true);
+        });
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!await AuthorizeApp()) return;
+        if (!(await AuthenticationState.GetAuthenticationStateAsync()).User.Identity.IsAuthenticated)
+        {
+            NavigationManager.NavigateTo("login");
+            return;
+        }
+        else
+        {
+            welcomText = $"Hi, {(await AuthenticationState.GetAuthenticationStateAsync()).User.Identity.Name}";
+        }
+    }
+
+    async Task<bool> AuthorizeApp()
+    {
+        try
+        {
+#if DEBUG
+    return true;
+#endif
+            var authInfo = await GeneralApi.GetAuthenticationInfo();
+            if (!authInfo.CanUseApplication)
+            {
+                throw new AppException("Application not enabled to use.");
+            }
+
+            Log.Logger.Information("Application enabled to use.");
+            return true;
+        }
+        catch (Exception e)
+        {
+            Log.Logger.Error("Failed to authenticate app.\nMessage: {message}\nStack Trace: {stack}", e.Message, e.StackTrace);
+            NavigationManager.NavigateTo("unauthorized");
+            return false;
+        }
+        return await Task.FromResult(true);
+    }
+}

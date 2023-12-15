@@ -1,5 +1,4 @@
-﻿using Kanakku.Application.Contracts.Essential;
-using Kanakku.Application.Contracts.Storage;
+﻿using Kanakku.Application.Contracts.Storage;
 using Kanakku.Application.Models.Attachment;
 using Kanakku.Shared;
 using MediatR;
@@ -16,18 +15,15 @@ public class ResourceQuery : IRequest<BinaryResourceDto>
 public class ResourceQueryHandler : IRequestHandler<ResourceQuery, BinaryResourceDto>
 {
     private readonly IAppDbContext _appDbContext;
-    private readonly IPermissionService permission;
 
-    public ResourceQueryHandler(IAppDbContext appDbContext, IPermissionService permission)
+    public ResourceQueryHandler(IAppDbContext appDbContext)
     {
         _appDbContext = appDbContext;
-        this.permission = permission;
     }
 
     public async Task<BinaryResourceDto> Handle(ResourceQuery request, CancellationToken cancellationToken)
     {
         var resource = await _appDbContext.BinaryResources.FirstAsync(x => x.Id == request.ResourceId, cancellationToken);
-        await permission.GetStoragePermission();
         var basePath = String.Format(DirectoryConstant.BINARY_RESOURCE_FORMAT, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
         if (!Directory.Exists(basePath))
         {
@@ -42,7 +38,7 @@ public class ResourceQueryHandler : IRequestHandler<ResourceQuery, BinaryResourc
             Base64String = Convert.ToBase64String(resource.Data),
             FileName = resource.FileName,
             FileFullName = resource.FileFullName,
-            Extension = resource.Extension 
+            Extension = resource.Extension
         };
     }
 }

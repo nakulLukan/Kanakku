@@ -4,21 +4,19 @@ using Kanakku.Domain.Inventory;
 using Kanakku.Domain.Lookup;
 using Kanakku.Domain.User;
 using Kanakku.Infrastructure.Seeder;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Reflection;
 
 namespace Kanakku.Infrastructure.Persistence;
 
-public class AppDbContext : DbContext, IAppDbContext
+public class AppDbContext : IdentityDbContext<AppUser>, IAppDbContext
 {
     private readonly IConfiguration configuration;
 
-    public AppDbContext()
-    {
-    }
-
-    public AppDbContext(IConfiguration configuration)
+    public AppDbContext(DbContextOptions<AppDbContext> options, IConfiguration configuration)
+        : base(options)
     {
         this.configuration = configuration;
         ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
@@ -31,7 +29,6 @@ public class AppDbContext : DbContext, IAppDbContext
     public DbSet<WorkHistory> WorkHistories { get; set; }
     public DbSet<LookupDetail> LookupDetails { get; set; }
     public DbSet<LookupMaster> LookupMasters { get; set; }
-    public DbSet<AppUser> AppUsers { get; set; }
     public DbSet<Employee> Employees { get; set; }
     public DbSet<ProductSize> ProductSizes { get; set; }
     public DbSet<ProductInstance> ProductInstances { get; set; }
@@ -51,6 +48,7 @@ public class AppDbContext : DbContext, IAppDbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(
             Assembly.GetExecutingAssembly(), t => t.GetInterfaces().Any(i =>
                 i.IsGenericType &&

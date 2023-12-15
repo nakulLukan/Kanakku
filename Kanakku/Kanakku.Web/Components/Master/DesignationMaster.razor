@@ -1,0 +1,57 @@
+﻿@using Kanakku.Application.Models.User
+@using Kanakku.Application.Requests.User
+@using Kanakku.UI.Contracts.Event
+@using MediatR
+@inject IMediator Mediator
+@inject IAppMediator AppMediator
+
+<MudText Typo="Typo.h6" GutterBottom="true">Designations</MudText>
+<MudPaper Width="100%">
+    <MudList Clickable="true">
+        <MudItem Class="d-flex gap-3 mx-4 my-1">
+            <MudTextField T="String" Variant="Variant.Filled" Label="Designation Name"
+                          @bind-Value="@desingationName" FullWidth="true"
+                          Class="mt-0"></MudTextField>
+            <MudIconButton Icon="@Icons.Material.Filled.Add" aria-label="add"
+                           Variant="MudBlazor.Variant.Filled" Color="Color.Primary"
+                           OnClick="SaveDesignation"></MudIconButton>
+        </MudItem>
+
+        @foreach (var designation in designations)
+        {
+            <MudListItem Text="@designation.Name"></MudListItem>
+        }
+    </MudList>
+</MudPaper>
+@code {
+    List<DesignationDto> designations = new();
+    string desingationName = string.Empty;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            designations = await Mediator.Send(new GetAllDesignationQuery());
+            StateHasChanged();
+        }
+    }
+
+    async Task SaveDesignation()
+    {
+        await AppMediator.Send(new CreateDesignationCommand
+            {
+                Name = desingationName.Trim()
+            })
+        .OnSuccess(async data =>
+        {
+            ToastService.Success("Designation created successfully.");
+            designations = await Mediator.Send(new GetAllDesignationQuery());
+            desingationName = string.Empty;
+            await InvokeAsync(StateHasChanged);
+        })
+        .OnError(error =>
+        {
+            ToastService.Error(error.Message);
+        });
+    }
+}
