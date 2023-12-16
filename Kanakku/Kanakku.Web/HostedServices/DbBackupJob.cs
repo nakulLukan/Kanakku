@@ -83,8 +83,8 @@ namespace Kanakku.Web.HostedServices
                 if (DateTime.ParseExact(dateStamp, BACKUP_FILE_STAMP_FORMAT, null) < DateTime.Now.AddDays(-30))
                 {
                     File.Delete(backupFile);
+                    logger.LogInformation("Backup file {0} deleted", Path.GetFileName(backupFile));
                 }
-                _logger.LogInformation("Backup file {0} deleted", Path.GetFileName(backupFile));
             }
         }
 

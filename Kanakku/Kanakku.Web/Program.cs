@@ -29,7 +29,6 @@ var configuration = new ConfigurationBuilder()
                 .AddCommandLine(args)
                 .Build();
 builder.Configuration.AddConfiguration(configuration);
-
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
