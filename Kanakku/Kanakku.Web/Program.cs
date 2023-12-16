@@ -25,6 +25,8 @@ var configuration = new ConfigurationBuilder()
 #if RELEASE
                 .AddJsonFile($"appsettings.release.json", optional: true)
 #endif
+                .AddEnvironmentVariables()
+                .AddCommandLine(args)
                 .Build();
 builder.Configuration.AddConfiguration(configuration);
 
