@@ -18,11 +18,10 @@ public static class DirectoryConstant
 {
     public const string BINARY_RESOURCE_FORMAT = "{0}/Kanakku/Binary Resources";
     public const string EXPORT_DIRECTORY_FORMAT = "{0}/Kanakku/Binary Resources/Exports";
-    public const string DB_BACKUP_FORMAT = "{0}/Kanakku/Backup/";
     public const string DFAULT_PRODUCT_IMAGE_PLACEHOLDER = "./assets/images/default-product-placeholder.png";
     public const string DFAULT_IMAGE_PLACEHOLDER = "./assets/images/default-product-placeholder.png";
     public static string EXPORT_DIRECTORY_PATH => String.Format(DirectoryConstant.EXPORT_DIRECTORY_FORMAT, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
-    public static string DB_BACKUP_PATH => String.Format(DirectoryConstant.DB_BACKUP_FORMAT, Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+    public static string DB_BACKUP_PATH => String.Format("{0}/Kanakku/Backup/", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 }
 
 public static class RouteConstant
